@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{BB313425-9F34-4C95-8941-982BF399C0A2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Sam.DAO</RootNamespace>
+    <AssemblyName>Sam.DAO</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MySql.Data">
+      <HintPath>..\..\dll\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.DataAccess, Version=2.112.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Oracle.DataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite, Version=1.0.66.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attribute\PropertyAttribute.cs" />
+    <Compile Include="Attribute\RelationAttribute.cs" />
+    <Compile Include="Attribute\TableAttribute.cs" />
+    <Compile Include="BaseServer.cs" />
+    <Compile Include="Builder\Clause\AndClause.cs" />
+    <Compile Include="Builder\Clause\BetweenClause.cs" />
+    <Compile Include="Builder\Clause\NullClause.cs" />
+    <Compile Include="Builder\Data\Condition.cs" />
+    <Compile Include="Builder\Clause\ConditionClause.cs" />
+    <Compile Include="Builder\Clause\IClause.cs" />
+    <Compile Include="Builder\Clause\InClause.cs" />
+    <Compile Include="Builder\Clause\KeyValueClause.cs" />
+    <Compile Include="Builder\Clause\OrClause.cs" />
+    <Compile Include="Builder\Data\KeyValue.cs" />
+    <Compile Include="config\DbConfig.cs" />
+    <Compile Include="config\DbConfigLoader.cs" />
+    <Compile Include="DaoContext.cs" />
+    <Compile Include="DbHelper.cs" />
+    <Compile Include="Entity\BaseEntity.cs" />
+    <Compile Include="Entity\ColumnInfo.cs" />
+    <Compile Include="Entity\CombinationEntity.cs" />
+    <Compile Include="Entity\CompareType.cs" />
+    <Compile Include="Entity\EntityHelper.cs" />
+    <Compile Include="ExFunc\ExFunc.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Entity\IEntity.cs" />
+    <Compile Include="Entity\JoinResult.cs" />
+    <Compile Include="Entity\LikeType.cs" />
+    <Compile Include="Exception\DAOException.cs" />
+    <Compile Include="Exception\DbException.cs" />
+    <Compile Include="Exception\LinqException.cs" />
+    <Compile Include="IBaseServer.cs" />
+    <Compile Include="IDaoContext.cs" />
+    <Compile Include="Linq\ExpressionParser.cs" />
+    <Compile Include="PoolDbHepler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tool\DaoDbProviderFactories.cs" />
+    <Compile Include="Tool\DataBaseType.cs" />
+    <Compile Include="Tool\DataTableUtil.cs" />
+    <Compile Include="Tool\DbParameterProvider.cs" />
+    <Compile Include="Tool\DbParameterProviderFactory.cs" />
+    <Compile Include="Tool\IDbParameterProvider.cs" />
+    <Compile Include="Tool\OleDbParameterProvider.cs" />
+    <Compile Include="Tool\OrderFunction.cs" />
+    <Compile Include="Tool\SqlInfo.cs" />
+    <Compile Include="Tool\TypeAdapter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="更新日志.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

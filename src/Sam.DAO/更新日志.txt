@@ -1,0 +1,16 @@
+﻿2014-03-13 GetTables及GetTableSchema方法增加支持sqlserver和oracle
+2014-03-14 改造GetTables及GetTableSchema方法，把原来使用sql获取的方式修改为使用ado.net提供的方法，
+           使用的主要方法有：con.GetSchema，cmd.ExecuteReader(CommandBehavior.KeyInfo)，dr.GetSchemaTable()
+		   使得这两个方法更好地支持多数据库，目前支持mysql、sqlserver、oracle、access
+2014-03-18 增加Count方法，分页方法增加返回记录总大小
+2014-03-20 增加时间方法扩展（Compare）
+2014-03-26 增加关联属性
+
+2014-8-28 改造 Builder 是LinqFunc由原来的字符串拼接改为参数调用。
+2014-8-29 修改DbConfig， DaoContext、Dbhelper构造函数以支持多数据库同时运行。
+
+2014-9-1 增加BaseServer类以及IBaseServer接口，加入其他数据库只需要继承BaseServer类并且重写GetDaoContext()方法到对应的数据库中即可。
+2014-9-2 增加分页方法，可以多个字段排序。
+
+2014-9-3 取消时间方法扩展（Compare），加入IsNull、IsNotNull、Between、NotBetween
+2014-10-22 加入外键表查询功能
