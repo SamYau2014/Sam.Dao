@@ -10,11 +10,11 @@ namespace Sam.DAO
 {
     public class BaseServer : IBaseServer
     {
-        private static readonly IDaoContext _defaultDB = new DaoContext();
+        private static readonly IDaoContext DefaultDB = new DaoContext();
 
         protected virtual IDaoContext GetDaoContext()
         {
-            return _defaultDB;
+            return DefaultDB;
         }
 
         #region 查找

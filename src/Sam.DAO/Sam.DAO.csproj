@@ -67,6 +67,7 @@
     <Compile Include="config\DbConfig.cs" />
     <Compile Include="config\DbConfigLoader.cs" />
     <Compile Include="DaoContext.cs" />
+    <Compile Include="DB.cs" />
     <Compile Include="DbHelper.cs" />
     <Compile Include="Entity\BaseEntity.cs" />
     <Compile Include="Entity\ColumnInfo.cs" />

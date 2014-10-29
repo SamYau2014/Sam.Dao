@@ -19,7 +19,7 @@ namespace Sam.DAO
     public sealed class DaoContext:IDaoContext,IDisposable
     {
        // private DbHelper _dbHelper;
-        private PoolDbHepler _dbHelper;
+        private DB _dbHelper;
         private EntityHelper _entityHelper;
         private readonly DbConfig _dbConfig;
 

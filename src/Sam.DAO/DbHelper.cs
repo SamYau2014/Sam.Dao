@@ -7,40 +7,29 @@ using Sam.DAO.config;
 using Sam.DAO.Tool;
 namespace Sam.DAO
 {
-    public class DbHelper:IDisposable
+    public class DbHelper:DB,IDisposable
     {
         private IDbConnection _conn;                              //连接对象
-        private DbProviderFactory _factory;                       //数据库服务提供工厂
-        private DbConfig _dbConfig;                                //数据库配置
-        private Hashtable paramCache = Hashtable.Synchronized(new Hashtable());
+       // private DbProviderFactory _factory;                       //数据库服务提供工厂
+      //  private readonly DbConfig _dbConfig;                                //数据库配置
+     //   private Hashtable paramCache = Hashtable.Synchronized(new Hashtable());
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="connectionString"></param>
         /// <param name="providerName"></param>
-        public DbHelper(string connectionString, string providerName,DbConfig dbconfig)
+        public DbHelper(string connectionString, string providerName, DbConfig dbconfig)
+            : base(providerName, dbconfig)
         {
-            _dbConfig = dbconfig;
-            _factory = DaoDbProviderFactories.GetFactory(providerName);
-            _conn = _factory.CreateConnection();
-            _conn.ConnectionString = connectionString;
+            this._conn = this.Factory.CreateConnection();
+            this._conn.ConnectionString = connectionString;
         }
 
-        /// <summary>
-        /// 获取DbConfig
-        /// </summary>
-        public DbConfig GetDbConfig
-        {
-            get
-            {
-                return _dbConfig;
-            }
-        }
         /// <summary>
         /// 获取所有表名
         /// </summary>
         /// <returns></returns>
-        public DataTable GetTables()
+        public override DataTable GetTables()
         {
             OpenConnection();
             DataTable dt = null;
@@ -48,7 +37,7 @@ namespace Sam.DAO
             
             //Catalog,Owner,Table及TableType
             string[] restrictions = new string[] { null, null, null, null };
-            switch (_dbConfig.DbType)
+            switch (DBConfig.DbType)
             {
                 case DataBaseType.sqlServer:
                     restrictions[3] = "BASE TABLE";
@@ -60,7 +49,7 @@ namespace Sam.DAO
                     dt = con.GetSchema("Tables", restrictions);
                     break;
                 case DataBaseType.Oracle:
-                    restrictions = new string[] { _dbConfig.UserId.ToUpper(), null };
+                    restrictions = new string[] { DBConfig.UserId.ToUpper(), null };
                     dt = con.GetSchema("Tables",restrictions);
                     break;
                 case DataBaseType.Oledb:
@@ -82,7 +71,7 @@ namespace Sam.DAO
         /// </summary>
         /// <param name="tableName"></param>
         /// <returns></returns>
-        public DataTable GetTableSchema(string tableName)
+        public override DataTable GetTableSchema(string tableName)
         {
             
             OpenConnection();
@@ -110,31 +99,6 @@ namespace Sam.DAO
             }
         }
 
-
-        /// <summary>
-        /// 创建参数
-        /// </summary>
-        /// <returns></returns>
-        public DbParameter CreateParameter()
-        {
-            return _factory.CreateParameter();
-        }
-
-        /// <summary>
-        /// 添加参数
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="paras"></param>
-        private void AddParameters(IDbCommand cmd,DbParameter[] paras)
-        {
-            if (paras != null)
-            {
-                foreach (DbParameter para in paras)
-                {
-                    cmd.Parameters.Add(para);
-                }
-            }
-        }
     
         /// <summary>
         /// 打开连接
@@ -149,8 +113,9 @@ namespace Sam.DAO
                     _conn.Open();
                     return true;
                 }
-                catch (DbException)
+                catch (DbException e)
                 {
+                    throw e;
                     return false;
                 }
             }
@@ -206,17 +171,18 @@ namespace Sam.DAO
         }
 
 
-        public DataTable ExecuteDataTable(string sql)
+        public override DataTable ExecuteDataTable(string sql)
         {
             SqlInfo sqlInfo = new SqlInfo { Sql = sql, Parameters = null };
             return ExecuteDataTable(sqlInfo);
         }
+
         /// <summary>
         /// ExecuteDataTable
         /// </summary>
         /// <param name="sql"></param>
         /// <returns></returns>
-        public DataTable ExecuteDataTable(SqlInfo sqlInfo)
+        public override DataTable ExecuteDataTable(SqlInfo sqlInfo)
         {
             IDataReader dr = null;
             try
@@ -262,7 +228,7 @@ namespace Sam.DAO
         /// </summary>
         /// <param name="sqlInfo"></param>
         /// <returns></returns>
-        public int ExecuteNonQuery(SqlInfo sqlInfo)
+        public override int ExecuteNonQuery(SqlInfo sqlInfo)
         {
             return ExecuteNonQuery(sqlInfo.Sql, CommandType.Text, sqlInfo.Parameters==null?null: sqlInfo.Parameters.ToArray());
         }
@@ -299,7 +265,7 @@ namespace Sam.DAO
             } 
         }
 
-        public object ExecuteScalar(SqlInfo sqlinfo)
+        public override object ExecuteScalar(SqlInfo sqlinfo)
         {
             if (!OpenConnection())
             {
@@ -329,7 +295,7 @@ namespace Sam.DAO
         /// </summary>
         /// <param name="sqls"></param>
         /// <returns></returns>
-        public bool ExecuteTransaction(params SqlInfo[] sqlInfos)
+        public override bool ExecuteTransaction(params SqlInfo[] sqlInfos)
         {
             if (!OpenConnection())
             {
@@ -367,7 +333,7 @@ namespace Sam.DAO
         /// </summary>
         /// <param name="sqls"></param>
         /// <returns></returns>
-        public bool ExecuteTransaction(params string[] sqls)
+        public override bool ExecuteTransaction(params string[] sqls)
         {
             if (!OpenConnection())
             {
@@ -400,14 +366,74 @@ namespace Sam.DAO
 
         #region 存储过程
 
+        #region Parameter Discovery Functions
+        public override DbParameter[] GetSpParameterSet(string procedureName)
+        {
+            if (string.IsNullOrEmpty(procedureName)) throw new ArgumentNullException("procedureName");
+            return GetSpParameterSetInternal(procedureName, false);
+        }
 
+        private DbParameter[] GetSpParameterSetInternal(string procedureName, bool includeReturnValueParameter)
+        {
+            string hashKey = procedureName + (includeReturnValueParameter ? "_include ReturnValue Parameter" : "");
+            DbParameter[] cachedParameters = ParamCache[hashKey] as DbParameter[];
+            if (cachedParameters == null)
+            {
 
-        public int RunSPNonQuery(string procedureName, params DbParameter[] paras)
+                    DbParameter[] spParameters = DiscoverSpParameterSet(_conn, procedureName, includeReturnValueParameter);
+                    ParamCache[hashKey] = spParameters;
+                    cachedParameters = spParameters;
+            }
+            return cachedParameters;
+        }
+
+        private DbParameter[] DiscoverSpParameterSet(IDbConnection conn, string procedureName, bool includeReturnValueParameter)
+        {
+            IDbCommand cmd = conn.CreateCommand();
+            cmd.CommandText = procedureName;
+            cmd.CommandType = CommandType.StoredProcedure;
+            switch (DBConfig.DbType)
+            {
+                case DataBaseType.sqlServer:
+                    OpenConnection();
+                    System.Data.SqlClient.SqlCommandBuilder.DeriveParameters(cmd as System.Data.SqlClient.SqlCommand);
+                    CloseConnection();
+                    break;
+                case DataBaseType.Oracle:
+                case DataBaseType.SystemOracle:
+                    OpenConnection();
+                    Oracle.DataAccess.Client.OracleCommandBuilder.DeriveParameters(cmd as Oracle.DataAccess.Client.OracleCommand);
+                    CloseConnection();
+                    break;
+                case DataBaseType.mySql:
+                    OpenConnection();
+                    MySql.Data.MySqlClient.MySqlCommandBuilder.DeriveParameters(cmd as MySql.Data.MySqlClient.MySqlCommand);
+                    CloseConnection();
+                    break;
+                default:
+                    throw new InnerException.DbException("暂时不支持该数据库类型");
+            }
+            if (!includeReturnValueParameter)
+            {
+                cmd.Parameters.RemoveAt(0);
+            }
+
+            DbParameter[] discoveredParameters = new DbParameter[cmd.Parameters.Count];
+            cmd.Parameters.CopyTo(discoveredParameters, 0);
+            foreach (DbParameter discoveredParameter in discoveredParameters)
+            {
+                discoveredParameter.Value = DBNull.Value;
+            }
+            return discoveredParameters;
+        }
+        #endregion Parameter Discovery Functions
+
+        public override int RunSPNonQuery(string procedureName, params DbParameter[] paras)
         {
             return ExecuteNonQuery(procedureName, CommandType.StoredProcedure, paras);
         }
 
-        public DataTable RunSPDataTable(string procedureName, params DbParameter[] paras)
+        public override DataTable RunSPDataTable(string procedureName, params DbParameter[] paras)
         {
             try
             {
@@ -443,7 +469,7 @@ namespace Sam.DAO
             CloseConnection();
             _conn.Dispose();
             _conn = null;
-            _factory = null;
+            Factory = null;
         }
     }
 }

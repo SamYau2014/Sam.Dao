@@ -28,13 +28,13 @@ namespace Sam.DAO.Entity
         /// 数据库访问对象
         /// </summary>
         //  private readonly DbHelper _dbHelper;
-        private readonly PoolDbHepler _dbHelper;
+        private readonly DB _dbHelper;
 
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="dbHelper"></param>
-        public EntityHelper(PoolDbHepler dbHelper)
+        public EntityHelper(DB dbHelper)
         {
             _dbHelper = dbHelper;
         }
