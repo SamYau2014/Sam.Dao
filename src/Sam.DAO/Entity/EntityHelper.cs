@@ -304,7 +304,7 @@ namespace Sam.DAO.Entity
             where T1 : BaseEntity, new()
             where T2 : BaseEntity, new()
         {
-            var t1Array = Select(func);
+            var t1Array = Select(func,null);
             if (t1Array == null)
                 return null;
             var enumerable = t1Array as T1[] ?? t1Array.ToArray();
@@ -334,13 +334,12 @@ namespace Sam.DAO.Entity
         /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
         /// <returns></returns>
-        public IEnumerable<T> Select<T>(Expression<Func<T, bool>> func) where T : BaseEntity, new()
+        public IEnumerable<T> Select<T>(Expression<Func<T, bool>> func, string[] properties) where T : BaseEntity, new()
         {
             T entity = new T();
-            //string whereSql = entity.Where(func);
+        
             SqlInfo sqlinfo = new SqlInfo();
             string whereSql = string.Empty;
-           // IList<KeyValueClause> keyValueClauses = new List<KeyValueClause>();
             IList<KeyValue> keyvalues = new List<KeyValue>();
             if (func != null)
             {
@@ -348,19 +347,29 @@ namespace Sam.DAO.Entity
                 if (whereSql != string.Empty)
                     whereSql = " where " + whereSql.Replace("Linq", _dbHelper.GetDbConfig.PreParameterChar + "Linq");
                 sqlinfo.Sql = string.Format(_selectFormat, entity.GetTableName(), whereSql);
-            }else
+            }
+            else
             {
                 sqlinfo.Sql = CreatePageSql(entity, 1, 500, whereSql, string.Empty);
             }
+            if (properties != null)
+            {
+                string columnNames = entity.GetType().GetProperties().
+                    Where(property => properties.Contains(property.Name)).
+                    Aggregate(string.Empty, (current, property) => current + ("," + entity.GetColumnName(property.Name)));
 
+                columnNames = columnNames.Substring(1);
+                int pos = sqlinfo.Sql.IndexOf('*');
+                sqlinfo.Sql = sqlinfo.Sql.Substring(0, pos) + columnNames + sqlinfo.Sql.Substring(pos + 1);
+            }
 
             foreach (var kv in keyvalues)
             {
-               // KeyValue kv = Param.GetKeyValue();
                 DbParameter parameter = _dbHelper.CreateParameter();
                 DbParameterProviderFactory.CreateParameterProvider(_dbHelper.GetDbConfig.DbType).SetParameter(_dbHelper.GetDbConfig.PreParameterChar + kv.LinqKeyName, kv.Value, kv.ValueType, ref parameter);
                 sqlinfo.Parameters.Add(parameter);
             }
+
             DataTable dt;
             if (sqlinfo.Parameters.Count == 0)
                 dt = _dbHelper.ExecuteDataTable(sqlinfo.Sql);
@@ -381,6 +390,7 @@ namespace Sam.DAO.Entity
         /// <param name="orderFunc">排序条件</param>
         /// <param name="isAsc">是否升序</param>
         /// <returns></returns>
+        /*
         public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc, out int recordCount, bool isAsc = true) where T : BaseEntity, new()
         {
             recordCount = Count<T>(func);
@@ -416,11 +426,13 @@ namespace Sam.DAO.Entity
             }
             return null;
         }
-
-        public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, out int recordCount, params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new()
+        */
+        public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, out int recordCount,bool hasCount, params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new()
         {
-            recordCount = Count<T>(func);
-            if (recordCount > 0)
+            recordCount = 0;
+            if (hasCount)
+                recordCount = Count<T>(func);
+            if ((hasCount&&recordCount > 0)||!hasCount)
             {
                 T entity = new T();
                 SqlInfo sqlinfo = new SqlInfo();
@@ -462,6 +474,8 @@ namespace Sam.DAO.Entity
             }
             return null;
         }
+
+
         /// <summary>
         /// 创建分页sql
         /// </summary>
@@ -517,7 +531,7 @@ namespace Sam.DAO.Entity
         }
 
         /// <summary>
-        /// 添加，适用于有自增字段的表，成功后返回主键值
+        /// 添加，适用于有自增字段的表，成功后返回主键值(oracle目前不支持)
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="entity"></param>
@@ -550,26 +564,45 @@ namespace Sam.DAO.Entity
             SqlInfo sqlinfo = new SqlInfo();
             foreach (PropertyInfo property in entity.GetType().GetProperties(false))
             {
-                if (entity.IsAutoIncrement(property))
-                    continue;
-                string columnName = entity.GetColumnName(property.Name);
-                string parameterName = _dbHelper.GetDbConfig.PreParameterChar + columnName;
-                object parameterValue = property.GetValue(entity, null);
-                if (parameterValue != null)
+                // string columnName;
+                if (entity.IsSequences(property))
                 {
+                    string columnName = entity.GetColumnName(property.Name);
                     if (fieldSql != "")
                     {
                         fieldSql += "," + columnName;
-                        valueParameterSql += "," + parameterName;
+                        valueParameterSql += "," + entity.GetSequences(property) + ".NEXTVAL";
                     }
                     else
                     {
                         fieldSql = columnName;
-                        valueParameterSql = parameterName;
+                        valueParameterSql = entity.GetSequences(property) + ".NEXTVAL";
                     }
-                    DbParameter parameter = _dbHelper.CreateParameter();
-                    DbParameterProviderFactory.CreateParameterProvider(_dbHelper.GetDbConfig.DbType).SetParameter(parameterName, parameterValue, property.PropertyType, ref parameter);
-                    sqlinfo.Parameters.Add(parameter);
+                }
+                else
+                {
+                    if (entity.IsAutoIncrement(property))
+                        continue;
+                    string columnName = entity.GetColumnName(property.Name);
+                    string parameterName = _dbHelper.GetDbConfig.PreParameterChar + columnName;
+                    object parameterValue = property.GetValue(entity, null);
+                    if (parameterValue != null)
+                    {
+                        if (fieldSql != "")
+                        {
+                            fieldSql += "," + columnName;
+                            valueParameterSql += "," + parameterName;
+                        }
+                        else
+                        {
+                            fieldSql = columnName;
+                            valueParameterSql = parameterName;
+                        }
+                        DbParameter parameter = _dbHelper.CreateParameter();
+                        DbParameterProviderFactory.CreateParameterProvider(_dbHelper.GetDbConfig.DbType).SetParameter(
+                            parameterName, parameterValue, property.PropertyType, ref parameter);
+                        sqlinfo.Parameters.Add(parameter);
+                    }
                 }
             }
 

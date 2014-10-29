@@ -22,10 +22,17 @@ namespace Sam.DAO
 
         IEnumerable<T> Select<T>(string sql, params DbParameter[] parameters) where T : BaseEntity, new();
 
-        IEnumerable<T> Select<T>(Expression<Func<T, bool>> func = null) where T : BaseEntity, new();
+        IEnumerable<T> Select<T>(Expression<Func<T, bool>> func) where T : BaseEntity, new();
 
-        IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc, out int recordCount, bool isAsc = true) where T : BaseEntity, new();
+        IEnumerable<T> Select<T>(Expression<Func<T, bool>> func, string[] properties) where T : BaseEntity, new();
 
+        IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc, out int recordCount, bool isAsc) where T : BaseEntity, new();
+
+        IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func,
+                                 Expression<Func<T, object>> orderFunc, bool isAsc) where T : BaseEntity, new();
+
+        IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func,
+                                 params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new();
         /// <summary>
         /// 分页查询
         /// </summary>
@@ -84,8 +91,11 @@ namespace Sam.DAO
 
         object ExecuteScalar(SqlInfo sqlInfo);
 
+        DbParameter[] GetSpParameterSet(string procedureName);
+
         int RunSPNonQuery(string procedureName, params DbParameter[] paras);
 
         DataTable RunSPDataTable(string procedureName, params DbParameter[] paras);
+
     }
 }

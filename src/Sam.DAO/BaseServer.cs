@@ -51,7 +51,7 @@ namespace Sam.DAO
         {
             return this.GetDaoContext().Select<T>(func);
         }
-
+        #region 分页查询
         /// <summary>
         /// 分页查询
         /// </summary>
@@ -82,7 +82,18 @@ namespace Sam.DAO
             return this.GetDaoContext().Select(pageIndex, pageSize, func, out recordCount, orderFuncs);
         }
 
-        #endregion
+
+        public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc, bool isAsc = true) where T : BaseEntity, new()
+        {
+            return this.GetDaoContext().Select(pageIndex, pageSize,func, orderFunc,isAsc);
+        }
+
+        public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new()
+        {
+            return this.GetDaoContext().Select(pageIndex, pageSize, func, orderFuncs);
+        }
+        #endregion 分页查询
+        #endregion 查找
 
         #region 添加
         /// <summary>
@@ -223,6 +234,11 @@ namespace Sam.DAO
         public virtual object ExecuteScalar(SqlInfo sqlInfo)
         {
             return this.GetDaoContext().ExecuteScalar(sqlInfo);
+        }
+
+        public virtual DbParameter[] GetSpParameterSet(string procedureName)
+        {
+            return this.GetDaoContext().GetSpParameterSet(procedureName);
         }
 
         public virtual int RunSPNonQuery(string procedureName, params DbParameter[] paras)

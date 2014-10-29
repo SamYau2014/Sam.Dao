@@ -113,9 +113,14 @@ namespace Sam.DAO
         /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
         /// <returns></returns>
-        public IEnumerable<T> Select<T>(Expression<Func<T, bool>> func = null) where T : BaseEntity, new()
+        public IEnumerable<T> Select<T>(Expression<Func<T, bool>> func) where T : BaseEntity, new()
         {
-            return _entityHelper.Select(func);
+            return _entityHelper.Select(func,null);
+        }
+
+        public IEnumerable<T> Select<T>(Expression<Func<T, bool>> func, string[] properties) where T : BaseEntity, new()
+        {
+            return _entityHelper.Select(func, properties);
         }
 
         /// <summary>
@@ -126,11 +131,13 @@ namespace Sam.DAO
         /// <param name="pageSize">每页记录数</param>
         /// <param name="func">查询条件</param>
         /// <param name="orderFunc">排序条件,仅支持单字段排序</param>
+        /// <param name="recordCount"> </param>
         /// <param name="isAsc">是否升序</param>
         /// <returns></returns>
-        public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc,out int recordCount, bool isAsc = true) where T : BaseEntity, new()
+        public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc,out int recordCount, bool isAsc) where T : BaseEntity, new()
         {
-            return _entityHelper.Select(pageIndex, pageSize, func, orderFunc,out recordCount, isAsc);
+            return _entityHelper.Select(pageIndex, pageSize, func, out recordCount, true,
+                                        new OrderFunction<T> {func = orderFunc, isAsc = isAsc});
         }
 
         /// <summary>
@@ -145,8 +152,41 @@ namespace Sam.DAO
         /// <returns></returns>
         public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, out int recordCount,params OrderFunction<T>[] orderFuncs ) where T : BaseEntity, new()
         {
-            return _entityHelper.Select(pageIndex, pageSize, func, out recordCount, orderFuncs);
+            return _entityHelper.Select(pageIndex, pageSize, func, out recordCount,true, orderFuncs);
         }
+
+        /// <summary>
+        /// 分页查询(不需要统计)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="func"></param>
+        /// <param name="orderFunc"></param>
+        /// <param name="isAsc"></param>
+        /// <returns></returns>
+        public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc, bool isAsc) where T : BaseEntity, new()
+        {
+            int count;
+            return _entityHelper.Select(pageIndex, pageSize, func, out count, false,
+                                      new OrderFunction<T> { func = orderFunc, isAsc = isAsc });
+        }
+
+        /// <summary>
+        /// 分页查询(不需要统计)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="func"></param>
+        /// <param name="orderFuncs"></param>
+        /// <returns></returns>
+          public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func,params OrderFunction<T>[] orderFuncs ) where T : BaseEntity, new()
+          {
+              int count;
+              return _entityHelper.Select(pageIndex, pageSize, func, out count, false,
+                                       orderFuncs);
+          }
 
         public int Count<T>(Expression<Func<T, bool>> func) where T : BaseEntity, new()
         {
@@ -253,12 +293,9 @@ namespace Sam.DAO
             return para;
         }
 
-        public int ExecuteNonQuery(string sqlFormat, DbParameter[] paras)
+        public int ExecuteNonQuery(string sql, DbParameter[] paras)
         {
-            SqlInfo sqlInfo = new SqlInfo();
-            sqlInfo.Sql = sqlFormat;
-            sqlInfo.Parameters = paras;
-            return _dbHelper.ExecuteNonQuery(sqlInfo);
+            return _dbHelper.ExecuteNonQuery(new SqlInfo{Sql=sql, Parameters=paras});
         }
 
         public int ExecuteNonQuery(SqlInfo sqlInfo)
@@ -302,13 +339,17 @@ namespace Sam.DAO
 
         public object ExecuteScalar(string sql)
         {
-            SqlInfo sqlInfo = new SqlInfo { Sql = sql, Parameters = null };
-            return _dbHelper.ExecuteScalar(sqlInfo);
+            return _dbHelper.ExecuteScalar(new SqlInfo { Sql = sql, Parameters = null });
         }
 
         public object ExecuteScalar(SqlInfo sqlInfo)
         {
             return _dbHelper.ExecuteScalar(sqlInfo);
+        }
+
+        public DbParameter[] GetSpParameterSet(string procedureName)
+        {
+            return _dbHelper.GetSpParameterSet(procedureName);
         }
 
         public int RunSPNonQuery(string procedureName, params DbParameter[] paras)

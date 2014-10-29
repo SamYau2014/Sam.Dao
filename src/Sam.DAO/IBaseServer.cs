@@ -31,9 +31,10 @@ namespace Sam.DAO
         /// <param name="pageSize">每页记录数</param>
         /// <param name="func">查询条件</param>
         /// <param name="orderFunc">排序条件,仅支持单字段排序</param>
+        /// <param name="recordCount">总共记录 </param>
         /// <param name="isAsc">是否升序</param>
         /// <returns></returns>
-        IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc, out int recordCount, bool isAsc = true) where T : BaseEntity, new();
+        IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc, out int recordCount, bool isAsc) where T : BaseEntity, new();
 
         /// <summary>
         /// 分页查询
@@ -47,6 +48,30 @@ namespace Sam.DAO
         /// <returns></returns>
         IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, out int recordCount, params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new();
 
+        /// <summary>
+        /// 分页查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="pageIndex">当前页数，从1开始算</param>
+        /// <param name="pageSize">每页记录数</param>
+        /// <param name="func">查询条件</param>
+        /// <param name="orderFunc"> </param>
+        /// <param name="isAsc">是否顺序（true为顺序，false为倒序） </param>
+        /// <returns></returns>
+        IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func,
+                         Expression<Func<T, object>> orderFunc, bool isAsc = true) where T : BaseEntity, new();
+
+        /// <summary>
+        /// 分页查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="pageIndex">当前页数，从1开始算</param>
+        /// <param name="pageSize">每页记录数</param>
+        /// <param name="func">查询条件</param>
+        /// <param name="orderFuncs"> 排序集合</param>
+        /// <returns></returns>
+        IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func,
+                                 params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new();
         #endregion
 
         #region 添加
@@ -133,6 +158,8 @@ namespace Sam.DAO
         object ExecuteScalar(string sql);
 
         object ExecuteScalar(SqlInfo sqlInfo);
+
+        DbParameter[] GetSpParameterSet(string procedureName);
 
         int RunSPNonQuery(string procedureName, params DbParameter[] paras);
 

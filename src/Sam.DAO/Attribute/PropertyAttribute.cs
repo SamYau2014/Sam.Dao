@@ -8,5 +8,6 @@ namespace Sam.DAO.Attribute
         public bool IsPrimaryKey { get; set; }
         public string Name { get; set; }
         public bool AutoIncrement { get; set; }
+        public string Sequences { get; set; }
     }
 }

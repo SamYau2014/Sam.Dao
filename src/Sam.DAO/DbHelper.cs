@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace Sam.DAO
         private IDbConnection _conn;                              //连接对象
         private DbProviderFactory _factory;                       //数据库服务提供工厂
         private DbConfig _dbConfig;                                //数据库配置
+        private Hashtable paramCache = Hashtable.Synchronized(new Hashtable());
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -397,6 +399,9 @@ namespace Sam.DAO
         }
 
         #region 存储过程
+
+
+
         public int RunSPNonQuery(string procedureName, params DbParameter[] paras)
         {
             return ExecuteNonQuery(procedureName, CommandType.StoredProcedure, paras);
@@ -406,16 +411,18 @@ namespace Sam.DAO
         {
             try
             {
-                IDataReader dr = ExecuteReader(procedureName, CommandType.StoredProcedure,paras);
-                if (!dr.Read())
+                using (IDataReader dr = ExecuteReader(procedureName, CommandType.StoredProcedure, paras))
                 {
+                    if (!dr.Read())
+                    {
+                        dr.Close();
+                        return null;
+                    }
+                    DataTable dt = new DataTable();
+                    dt.Load(dr);
                     dr.Close();
-                    return null;
+                    return dt;
                 }
-                DataTable dt = new DataTable();
-                dt.Load(dr);
-                dr.Close();
-                return dt;
             }
             catch (DbException e)
             {

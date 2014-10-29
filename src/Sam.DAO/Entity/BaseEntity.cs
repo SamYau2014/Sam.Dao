@@ -54,6 +54,15 @@ namespace Sam.DAO.Entity
             return propertyAttribute.AutoIncrement;
         }
 
+        public bool IsSequences(PropertyInfo property)
+        {
+            object[] attributes = property.GetCustomAttributes(typeof(PropertyAttribute), false);
+            if (attributes.Length == 0)
+                return false;
+            PropertyAttribute propertyAttribute = (PropertyAttribute)attributes[0];
+            return !string.IsNullOrEmpty(propertyAttribute.Sequences);
+        }
+
         public IDictionary<PropertyInfo, RelationAttribute> GetRelationProperties()
         {
             IDictionary<PropertyInfo, RelationAttribute> dict = new Dictionary<PropertyInfo, RelationAttribute>();
@@ -99,6 +108,15 @@ namespace Sam.DAO.Entity
                 return propertyName;
             PropertyAttribute propertyAttribute = (PropertyAttribute)attributes[0];
             return propertyAttribute == null ? propertyName : propertyAttribute.Name;
+        }
+
+        public string GetSequences(PropertyInfo property)
+        {
+            object[] attributes = property.GetCustomAttributes(typeof(PropertyAttribute), false);
+            if (attributes.Length == 0)
+                return string.Empty;
+            PropertyAttribute propertyAttribute = (PropertyAttribute)attributes[0];
+            return propertyAttribute.Sequences;
         }
 
         /// <summary>
