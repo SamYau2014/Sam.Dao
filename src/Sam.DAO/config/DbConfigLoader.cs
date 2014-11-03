@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Sam.DAO.DAOException;
 using Sam.DAO.Tool;
 using System.Configuration;
 
@@ -19,11 +17,8 @@ namespace Sam.DAO.config
         {
             ConnectionStringSettings css = ConfigurationManager.ConnectionStrings[name];
             if (css == null)
-                throw new Exception("找不到指定的数据库连接信息");
-            dbconfig.ProviderName = css.ProviderName;
-            dbconfig.ConnectionString = css.ConnectionString;
-            dbconfig.DbType = GetDbType(css.ProviderName);
-            ValidateProviderName(css.ProviderName, dbconfig.DbType);
+                throw new Sam.DAO.DAOException.DaoException("找不到指定的数据库连接信息");
+            Load(css.ConnectionString, css.ProviderName, dbconfig);
         }
 
    
@@ -35,9 +30,7 @@ namespace Sam.DAO.config
         /// <param name="dbconfig">数据库配置信息</param>
         public static void Load(string connectionString, string providerName,DbConfig dbconfig)
         {
-            dbconfig.ProviderName = providerName;
-            dbconfig.ConnectionString = connectionString;
-            dbconfig.DbType = GetDbType(providerName);
+            Load(connectionString, GetDbType(providerName), dbconfig);
             ValidateProviderName(providerName, dbconfig.DbType);
         }
 
@@ -80,6 +73,8 @@ namespace Sam.DAO.config
                 case "MySql.Data.MySqlClient":
                     return DataBaseType.mySql;
                 case "System.Data.OracleClient":
+                    return DataBaseType.SystemOracle;
+                case "Oracle.DataAccess.Client":
                     return DataBaseType.Oracle;
                 case "System.Data.OleDb":
                     return DataBaseType.Oledb;
@@ -106,6 +101,8 @@ namespace Sam.DAO.config
                 case DataBaseType.mySql:
                     return "MySql.Data.MySqlClient";
                 case DataBaseType.Oracle:
+                    return "Oracle.DataAccess.Client";
+                case DataBaseType.SystemOracle:
                     return "System.Data.OracleClient";
                 case DataBaseType.Oledb:
                     return "System.Data.OleDb";

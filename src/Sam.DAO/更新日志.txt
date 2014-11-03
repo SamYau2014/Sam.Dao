@@ -14,3 +14,5 @@
 
 2014-9-3 取消时间方法扩展（Compare），加入IsNull、IsNotNull、Between、NotBetween
 2014-10-22 加入外键表查询功能
+
+2014-11-3 经过多线程并发测试，PoolDbHelper可支持连接池并发，DbHelper仅支持单线程下执行。

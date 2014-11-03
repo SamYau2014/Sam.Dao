@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sam.DAO.ExFunc;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -7,10 +8,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Sam.DAO.Attribute;
 using Sam.DAO.Builder.Data;
-using Sam.DAO.ExFunc;
 using Sam.DAO.Linq;
 using Sam.DAO.Tool;
-using Sam.DAO.InnerException;
 
 namespace Sam.DAO.Entity
 {
@@ -27,7 +26,6 @@ namespace Sam.DAO.Entity
         /// <summary>
         /// 数据库访问对象
         /// </summary>
-        //  private readonly DbHelper _dbHelper;
         private readonly DB _dbHelper;
 
         /// <summary>
@@ -73,8 +71,8 @@ namespace Sam.DAO.Entity
             {
                 return;
             }
-            if (relationProperties.Count > 1)
-                throw new DaoException("目前不支持多个外键查询");
+          //  if (relationProperties.Count > 1)
+             //   throw new System.Exception("目前不支持多个外键查询");
             Type relationEntityType;
 
             if (foreignEntity.GetType().IsGenericType)
@@ -230,7 +228,6 @@ namespace Sam.DAO.Entity
             }
             else if (TypeAdapter.IsNetDateType(type))
             {
-               // return string.Format(DbConfig.PreParameterChar, value);
                 return string.Format(_dbHelper.GetDbConfig.PreParameterChar, value);
             }
             else
@@ -287,7 +284,7 @@ namespace Sam.DAO.Entity
             {
                 whereSql = ExpressionParser<T>.Parse(func).ToSql(ref keyvalues, _dbHelper.GetDbConfig);
                 if (whereSql != string.Empty)
-                    whereSql = " where " + whereSql.Replace("Linq", _dbHelper.GetDbConfig.PreParameterChar + "Linq");
+                    whereSql = " where " + whereSql;
             }
             sqlinfo.Sql = string.Format(sql, entity.GetTableName(), whereSql);
             foreach (var kv in keyvalues)
@@ -345,7 +342,7 @@ namespace Sam.DAO.Entity
             {
                 whereSql = ExpressionParser<T>.Parse(func).ToSql(ref keyvalues, _dbHelper.GetDbConfig);
                 if (whereSql != string.Empty)
-                    whereSql = " where " + whereSql.Replace("Linq", _dbHelper.GetDbConfig.PreParameterChar + "Linq");
+                    whereSql = " where " + whereSql;
                 sqlinfo.Sql = string.Format(_selectFormat, entity.GetTableName(), whereSql);
             }
             else
@@ -380,63 +377,16 @@ namespace Sam.DAO.Entity
             return FromDataTable<T>(dt);
         }
 
-        /// <summary>
-        /// 分页查询
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="pageIndex">当前页数，从1开始算</param>
-        /// <param name="pageSize">每页记录数</param>
-        /// <param name="func">查询条件</param>
-        /// <param name="orderFunc">排序条件</param>
-        /// <param name="isAsc">是否升序</param>
-        /// <returns></returns>
-        /*
-        public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc, out int recordCount, bool isAsc = true) where T : BaseEntity, new()
-        {
-            recordCount = Count<T>(func);
-            if (recordCount > 0)
-            {
-                T entity = new T();
-                SqlInfo sqlinfo = new SqlInfo();
-                //   IList<KeyValueClause> keyValueClauses = new List<KeyValueClause>();
-                IList<KeyValue> keyvalues = new List<KeyValue>();
-
-                string whereSql = string.Empty;
-                if (func != null)
-                {
-                    whereSql = ExpressionParser<T>.Parse(func).ToSql(ref keyvalues, _dbHelper.GetDbConfig);
-                    if (whereSql != string.Empty)
-                        whereSql = " where " + whereSql.Replace("Linq", _dbHelper.GetDbConfig.PreParameterChar + "Linq");
-                }
-                string orderSql = orderFunc == null ? string.Empty : entity.OrderBy<T>(orderFunc, isAsc);
-                sqlinfo.Sql = CreatePageSql(entity, pageIndex, pageSize, whereSql, orderSql);
-                foreach (var kv in keyvalues)
-                {
-                    DbParameter parameter = _dbHelper.CreateParameter();
-                    DbParameterProviderFactory.CreateParameterProvider(_dbHelper.GetDbConfig.DbType).SetParameter(
-                        _dbHelper.GetDbConfig.PreParameterChar + kv.LinqKeyName, kv.Value, kv.ValueType, ref parameter);
-                    sqlinfo.Parameters.Add(parameter);
-                }
-                DataTable dt;
-                if (sqlinfo.Parameters.Count == 0)
-                    dt = _dbHelper.ExecuteDataTable(sqlinfo.Sql);
-                else
-                    dt = _dbHelper.ExecuteDataTable(sqlinfo);
-                return FromDataTable<T>(dt);
-            }
-            return null;
-        }
-        */
         public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, out int recordCount,bool hasCount, params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new()
         {
             recordCount = 0;
             if (hasCount)
-                recordCount = Count<T>(func);
+                recordCount = Count(func);
             if ((hasCount&&recordCount > 0)||!hasCount)
             {
                 T entity = new T();
                 SqlInfo sqlinfo = new SqlInfo();
-                //   IList<KeyValueClause> keyValueClauses = new List<KeyValueClause>();
+
                 IList<KeyValue> keyvalues = new List<KeyValue>();
 
                 string whereSql = string.Empty;
@@ -444,9 +394,8 @@ namespace Sam.DAO.Entity
                 {
                     whereSql = ExpressionParser<T>.Parse(func).ToSql(ref keyvalues, _dbHelper.GetDbConfig);
                     if (whereSql != string.Empty)
-                        whereSql = " where " + whereSql.Replace("Linq", _dbHelper.GetDbConfig.PreParameterChar + "Linq");
+                        whereSql = " where " + whereSql;
                 }
-               // string orderSql = orderFunc == null ? string.Empty : entity.OrderBy<T>(orderFunc, isAsc);
                 string orderSql = "";
                 if (orderFuncs != null)
                 {
@@ -670,16 +619,13 @@ namespace Sam.DAO.Entity
             }
             else
             {
-                //   IList<KeyValueClause> keyValueClauses = new List<KeyValueClause>();
                 IList<KeyValue> keyvalues = new List<KeyValue>();
 
                 whereSql = ExpressionParser<T>.Parse(func).ToSql(ref keyvalues, _dbHelper.GetDbConfig);
-                //whereSql = entity.Where(func);
                 if (whereSql != "")
-                    whereSql = " where " + whereSql.Replace("Linq", _dbHelper.GetDbConfig.PreParameterChar + "Linq");
+                    whereSql = " where " + whereSql;
                 foreach (var kv in keyvalues)
                 {
-                   // KeyValue kv = param.GetKeyValue();
                     DbParameter parameter = _dbHelper.CreateParameter();
                     DbParameterProviderFactory.CreateParameterProvider(_dbHelper.GetDbConfig.DbType).SetParameter(_dbHelper.GetDbConfig.PreParameterChar + kv.LinqKeyName, kv.Value, kv.ValueType, ref parameter);
                     sqlInfo.Parameters.Add(parameter);
@@ -751,7 +697,7 @@ namespace Sam.DAO.Entity
                 // whereSql = entity.Where(func);
                 whereSql = ExpressionParser<T>.Parse(func).ToSql(ref keyvalues, _dbHelper.GetDbConfig);
                 if (whereSql != "")
-                    whereSql = " where " + whereSql.Replace("Linq", _dbHelper.GetDbConfig.PreParameterChar + "Linq");
+                    whereSql = " where " + whereSql;
                 foreach (var kv in keyvalues)
                 {
                   //  KeyValue kv = param.GetKeyValue();

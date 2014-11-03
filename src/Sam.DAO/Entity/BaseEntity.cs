@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sam.DAO.ExFunc;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -6,6 +7,8 @@ using System.Linq;
 using System.Reflection;
 using Sam.DAO.Attribute;
 using Sam.DAO.Tool;
+using Sam.DAO.DAOException;
+
 
 namespace Sam.DAO.Entity
 {
@@ -66,7 +69,7 @@ namespace Sam.DAO.Entity
         public IDictionary<PropertyInfo, RelationAttribute> GetRelationProperties()
         {
             IDictionary<PropertyInfo, RelationAttribute> dict = new Dictionary<PropertyInfo, RelationAttribute>();
-            foreach (PropertyInfo property in this.GetType().GetProperties())
+            foreach (PropertyInfo property in this.GetType().GetProperties(false))
             {
                 object[] attributes = property.GetCustomAttributes(typeof(RelationAttribute), false);
                 if (attributes.Length > 0)
@@ -75,7 +78,7 @@ namespace Sam.DAO.Entity
                     if (ra.Key != "" && ra.RelationKey != "")
                         dict.Add(property, ra);
                     else
-                        throw new Exception(property.Name + ":未正确设置关联属性");
+                        throw new DaoException(property.Name + ":未正确设置关联属性");
                 }
             }
             return dict;
@@ -128,7 +131,7 @@ namespace Sam.DAO.Entity
             if (_primaryKey != null)
                 return _primaryKey;
             ArrayList list = new ArrayList();
-            foreach (PropertyInfo property in this.GetType().GetProperties())
+            foreach (PropertyInfo property in this.GetType().GetProperties(false))
             {
                 object[] attributes = property.GetCustomAttributes(typeof(PropertyAttribute), false);
 
@@ -154,7 +157,7 @@ namespace Sam.DAO.Entity
         /// <param name="dr"></param>
         public void FromDataRow(DataRow dr)
         {
-            PropertyInfo[] properties = this.GetType().GetProperties();
+            PropertyInfo[] properties = this.GetType().GetProperties(false);
 
             foreach (PropertyInfo property in properties)
             {

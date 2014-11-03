@@ -5,9 +5,10 @@ using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Linq.Expressions;
+using Sam.DAO.DAOException;
 using Sam.DAO.config;
 using Sam.DAO.Entity;
-using Sam.DAO.InnerException;
+using Sam.DAO.DAOException;
 using Sam.DAO.Tool;
 
 namespace Sam.DAO
@@ -29,18 +30,18 @@ namespace Sam.DAO
         /// </summary>
         public DaoContext()
         {
-            _dbConfig = new DbConfig();
+            
             string dbName = ConfigurationManager.AppSettings["defaultDatabase"];
             if (string.IsNullOrEmpty(dbName))
             {
                 ConnectionStringSettings css = ConfigurationManager.ConnectionStrings[0];
                 if(string.IsNullOrEmpty(css.Name))
-                    throw new DaoException("未设置数据库配置信息");
+                    throw new Exception("未设置数据库配置信息");
                 dbName = css.Name;
             }
+            _dbConfig = new DbConfig();
             DbConfigLoader.Load(dbName, _dbConfig);
-          //  _dbHelper = new DbHelper(_dbConfig.ConnectionString, _dbConfig.ProviderName,_dbConfig);
-            _dbHelper = new PoolDbHepler(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
+            _dbHelper = new PoolDbHelper(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
             _entityHelper = new EntityHelper(_dbHelper);
         }
 
@@ -48,7 +49,7 @@ namespace Sam.DAO
         {
             _dbConfig = new DbConfig();
             DbConfigLoader.Load(name, _dbConfig);
-            _dbHelper = new PoolDbHepler(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
+            _dbHelper = new PoolDbHelper(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
             _entityHelper = new EntityHelper(_dbHelper);
         }
 
@@ -56,7 +57,7 @@ namespace Sam.DAO
         {
              _dbConfig = new DbConfig();
             DbConfigLoader.Load(connectionString, providerName,_dbConfig);
-            _dbHelper = new PoolDbHepler(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
+            _dbHelper = new PoolDbHelper(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
             _entityHelper = new EntityHelper(_dbHelper);
         }
 
@@ -64,7 +65,7 @@ namespace Sam.DAO
         {
             _dbConfig = new DbConfig();
             DbConfigLoader.Load(connectionString, dbType,_dbConfig);
-            _dbHelper = new PoolDbHepler(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
+            _dbHelper = new PoolDbHelper(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
             _entityHelper = new EntityHelper(_dbHelper);
         }
 
