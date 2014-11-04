@@ -16,10 +16,10 @@ namespace Sam.DAO
         protected readonly DbConfig DBConfig; //数据库配置
         protected Hashtable ParamCache;
 
-        protected DB(string providerName, DbConfig dbconfig)
+        protected DB(DbConfig dbconfig)
         {
             this.DBConfig= dbconfig;
-            this.Factory = DaoDbProviderFactories.GetFactory(providerName);
+            this.Factory = DaoDbProviderFactories.GetFactory(dbconfig.ProviderName);
             this.ParamCache = Hashtable.Synchronized(new Hashtable());
         }
 

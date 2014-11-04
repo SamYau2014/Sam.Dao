@@ -8,24 +8,17 @@ using Sam.DAO.Tool;
 
 namespace Sam.DAO
 {
-    public class PoolDbHelper :DB, IDisposable
+    public class PoolDbHelper :DB,IDisposable
     {
-      //  private DbProviderFactory _factory; //数据库服务提供工厂
-      //  private readonly DbConfig _dbConfig; //数据库配置
         private readonly string _connectionString;
-       // private Hashtable paramCache = Hashtable.Synchronized(new Hashtable());
 
         /// <summary>
         /// 构造函数
         /// </summary>
-        /// <param name="connectionString"></param>
-        /// <param name="providerName"></param>
         /// <param name="dbconfig"> </param>
-        public PoolDbHelper(string connectionString, string providerName, DbConfig dbconfig):base(providerName,dbconfig)
+        public PoolDbHelper(DbConfig dbconfig):base(dbconfig)
         {
-           // _dbConfig = dbconfig;
-           // _factory = DaoDbProviderFactories.GetFactory(providerName);
-            _connectionString = connectionString;
+            _connectionString = dbconfig.ConnectionString;
         }
 
 
@@ -46,7 +39,7 @@ namespace Sam.DAO
                 }
                 catch (DbException e)
                 {
-                    throw e;
+                    throw new DAOException.DbException("OpenConnetion Error",e);
                 }
             }
         }
@@ -57,7 +50,6 @@ namespace Sam.DAO
         /// <returns></returns>
         public override DataTable GetTables()
         {
-            //  OpenConnection();
             DataTable dt = null;
             using (var con = CreateConnection() as DbConnection)
             {
@@ -89,7 +81,6 @@ namespace Sam.DAO
                         break;
                 }
             }
-            // CloseConnection();
             return dt;
         }
 
@@ -100,18 +91,17 @@ namespace Sam.DAO
         /// <returns></returns>
         public override DataTable GetTableSchema(string tableName)
         {
-
-            // OpenConnection();
             using (IDbConnection conn = this.CreateConnection())
             {
                 string sql = "select * from " + tableName + " where 1=0";
                 IDbCommand cmd = conn.CreateCommand();
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = sql;
+                IDataReader dr = null;
                 try
                 {
                     OpenConnetion(conn);
-                    IDataReader dr = cmd.ExecuteReader(CommandBehavior.KeyInfo);
+                    dr = cmd.ExecuteReader(CommandBehavior.KeyInfo);
                     DataTable dt = dr.GetSchemaTable();
                     //DataTable dt1 = new DataTable();
                     //dt1.Load(dr);
@@ -120,7 +110,12 @@ namespace Sam.DAO
                 }
                 catch (DbException e)
                 {
-                    throw e;
+                    throw new DAOException.DbException("GetTableSchema Error", e);
+                }
+                finally
+                {
+                    if (dr != null) dr.Dispose();
+                    cmd.Dispose();
                 }
             }
         }
@@ -146,24 +141,27 @@ namespace Sam.DAO
         /// <summary>
         /// ExecuteReader,带参数
         /// </summary>
-        /// <param name="sqlFormat"></param>
+        /// <param name="sql"></param>
         /// <param name="cmdType"></param>
         /// <param name="paras"></param>
         /// <returns></returns>
-        private IDataReader ExecuteReader(IDbConnection conn, string sqlFormat, CommandType cmdType, DbParameter[] paras = null)
+        private IDataReader ExecuteReader(IDbConnection conn, string sql, CommandType cmdType, DbParameter[] paras = null)
         {
-            IDbCommand cmd = conn.CreateCommand();
-            cmd.CommandText = sqlFormat;
-            cmd.CommandType = cmdType;
-            AddParameters(cmd, paras);
-            try
+            using (IDbCommand cmd = conn.CreateCommand())
             {
-                OpenConnetion(conn);
-                return cmd.ExecuteReader();
-            }
-            catch (DbException e)
-            {
-                throw e;
+                cmd.CommandText = sql;
+                cmd.CommandType = cmdType;
+                AddParameters(cmd, paras);
+                try
+                {
+                    OpenConnetion(conn);
+                    return cmd.ExecuteReader();
+                }
+                catch (DbException e)
+                {
+                    string errorInfo = "sql>>" + sql + "\tcmdType>>" + cmdType.ToString();
+                    throw new DAOException.DbException("ExecuteReader Error!\nArguments:" + errorInfo, e);
+                }
             }
         }
 
@@ -182,11 +180,11 @@ namespace Sam.DAO
         {
             using (IDbConnection conn = this.CreateConnection())
             {
+                IDataReader dr = null;
                 try
                 {
                     OpenConnetion(conn);
-                    IDataReader dr = null;
-                    if (sqlInfo.Parameters == null)
+                    if (sqlInfo.Parameters == null || sqlInfo.Parameters.Count==0)
                         dr = ExecuteReader(conn, sqlInfo.Sql, CommandType.Text);
                     else
                         dr = ExecuteReader(conn, sqlInfo.Sql, CommandType.Text, sqlInfo.Parameters.ToArray());
@@ -207,13 +205,17 @@ namespace Sam.DAO
                         dt.Rows.Add(datarow);
                     }
                     dr.Close();
-                    dr.Dispose();
                     return dt.Rows.Count == 0 ? null : dt;
                 }
                 catch (DbException e)
                 {
-                    throw e;
-                    return null;
+                    string errorInfo = "sql>>" + sqlInfo.Sql;
+                    throw new DAOException.DbException("ExecuteDataTable Error!\nArguments:" + errorInfo, e);
+                }
+                finally
+                {
+                    if (dr != null)
+                        dr.Dispose();
                 }
             }
         }
@@ -234,16 +236,16 @@ namespace Sam.DAO
         /// <summary>
         /// ExecuteNonQuery
         /// </summary>
-        /// <param name="sqlFormat"></param>
+        /// <param name="sql"></param>
         /// <param name="cmdType"></param>
         /// <param name="paras"></param>
         /// <returns></returns>
-        private int ExecuteNonQuery(string sqlFormat, CommandType cmdType, DbParameter[] paras)
+        private int ExecuteNonQuery(string sql, CommandType cmdType, DbParameter[] paras)
         {
             using (IDbConnection conn = this.CreateConnection())
             {
                 IDbCommand cmd = conn.CreateCommand();
-                cmd.CommandText = sqlFormat;
+                cmd.CommandText = sql;
                 cmd.CommandType = cmdType;
                 AddParameters(cmd, paras);
                 try
@@ -253,7 +255,8 @@ namespace Sam.DAO
                 }
                 catch (DbException e)
                 {
-                    throw e;
+                    string errorInfo = "sql>>" + sql;
+                    throw new DAOException.DbException("ExecuteNonQuery Error!\nArguments:" + errorInfo, e);
                 }
             }
         }
@@ -262,20 +265,25 @@ namespace Sam.DAO
         {
             using (IDbConnection conn = this.CreateConnection())
             {
-                IDbCommand cmd = conn.CreateCommand();
-                cmd.CommandText = sqlinfo.Sql;
-                cmd.CommandType = CommandType.Text;
-                if (sqlinfo.Parameters != null && sqlinfo.Parameters.Count > 0)
-                    AddParameters(cmd, sqlinfo.Parameters.ToArray());
-                try
+                using(IDbCommand cmd = conn.CreateCommand())
                 {
-                    OpenConnetion(conn);
-                    return cmd.ExecuteScalar();
+                    cmd.CommandText = sqlinfo.Sql;
+                    cmd.CommandType = CommandType.Text;
+                    if (sqlinfo.Parameters != null && sqlinfo.Parameters.Count > 0)
+                        AddParameters(cmd, sqlinfo.Parameters.ToArray());
+                    try
+                    {
+                        OpenConnetion(conn);
+                        var result=cmd.ExecuteScalar();
+                        return result;
+                    }
+                    catch (DbException e)
+                    {
+                        string errorInfo = "sql>>" + sqlinfo.Sql;
+                        throw new DAOException.DbException("ExecuteScalar Error!\nArguments:" + errorInfo, e);
+                    }
                 }
-                catch (DbException e)
-                {
-                    throw e;
-                }
+             
             }
         }
 
@@ -289,31 +297,31 @@ namespace Sam.DAO
             using (IDbConnection conn = this.CreateConnection())
             {
                 OpenConnetion(conn);
-                IDbTransaction transaction = conn.BeginTransaction();
-                IDbCommand cmd = conn.CreateCommand();
-                cmd.Transaction = transaction;
-                cmd.CommandType = CommandType.Text;
-                try
+                using (IDbTransaction transaction = conn.BeginTransaction())
                 {
-                   
-                    foreach (SqlInfo sqlInfo in sqlInfos)
+                    using (IDbCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = sqlInfo.Sql;
-                        AddParameters(cmd, sqlInfo.Parameters.ToArray());
-                        cmd.ExecuteNonQuery();
-                        cmd.Parameters.Clear();
+                        cmd.Transaction = transaction;
+                        cmd.CommandType = CommandType.Text;
+                        try
+                        {
+
+                            foreach (SqlInfo sqlInfo in sqlInfos)
+                            {
+                                cmd.CommandText = sqlInfo.Sql;
+                                AddParameters(cmd, sqlInfo.Parameters.ToArray());
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear();
+                            }
+                            transaction.Commit();
+                            return true;
+                        }
+                        catch (DbException e)
+                        {
+                            transaction.Rollback();
+                            throw new DAOException.DbException("ExecuteTransaction Error!", e);
+                        }
                     }
-                    transaction.Commit();
-                    return true;
-                }
-                catch (DbException e)
-                {
-                    transaction.Rollback();
-                    throw e;
-                }
-                finally
-                {
-                    transaction.Dispose();
                 }
             }
         }
@@ -327,25 +335,28 @@ namespace Sam.DAO
         {
             using (IDbConnection conn = this.CreateConnection())
             {
-                IDbTransaction transaction = conn.BeginTransaction();
-                IDbCommand cmd = conn.CreateCommand();
-                cmd.Transaction = transaction;
-                cmd.CommandType = CommandType.Text;
-                try
+                using (IDbTransaction transaction = conn.BeginTransaction())
                 {
-                    foreach (string sql in sqls)
+                    using (IDbCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = sql;
-                        cmd.ExecuteNonQuery();
+                        cmd.Transaction = transaction;
+                        cmd.CommandType = CommandType.Text;
+                        try
+                        {
+                            foreach (string sql in sqls)
+                            {
+                                cmd.CommandText = sql;
+                                cmd.ExecuteNonQuery();
+                            }
+                            transaction.Commit();
+                            return true;
+                        }
+                        catch (DbException e)
+                        {
+                            transaction.Rollback();
+                            throw new DAOException.DbException("ExecuteTransaction Error!", e);
+                        }
                     }
-                    transaction.Commit();
-                    return true;
-                }
-                catch (DbException e)
-                {
-                    transaction.Rollback();
-                    throw e;
-                    return false;
                 }
             }
         }
@@ -377,41 +388,46 @@ namespace Sam.DAO
 
         private DbParameter[] DiscoverSpParameterSet(IDbConnection conn, string procedureName, bool includeReturnValueParameter)
         {
-            IDbCommand cmd = conn.CreateCommand();
-            cmd.CommandText = procedureName;
-            cmd.CommandType = CommandType.StoredProcedure;
-           switch(DBConfig.DbType)
-           {
-               case DataBaseType.sqlServer:
-                   OpenConnetion(conn);
-                  System.Data.SqlClient.SqlCommandBuilder.DeriveParameters(cmd as System.Data.SqlClient.SqlCommand);
-                   conn.Close();
-                   break;
-               case DataBaseType.Oracle:
-                   OpenConnetion(conn);
-                   Oracle.DataAccess.Client.OracleCommandBuilder.DeriveParameters(cmd as Oracle.DataAccess.Client.OracleCommand);
-                   conn.Close();
-                   break;
-               case DataBaseType.mySql:
-                   OpenConnetion(conn);
-                   MySql.Data.MySqlClient.MySqlCommandBuilder.DeriveParameters(cmd as MySql.Data.MySqlClient.MySqlCommand);
-                   conn.Close();
-                   break;
-               default:
-                   throw new DAO.DAOException.DbException("暂时不支持该数据库类型");
-           }
-           if (!includeReturnValueParameter)
-           {
-               cmd.Parameters.RemoveAt(0);
-           }
-
-            DbParameter[] discoveredParameters = new DbParameter[cmd.Parameters.Count];
-            cmd.Parameters.CopyTo(discoveredParameters, 0);
-            foreach (DbParameter discoveredParameter in discoveredParameters)
+            using (IDbCommand cmd = conn.CreateCommand())
             {
-                discoveredParameter.Value = DBNull.Value;
+                cmd.CommandText = procedureName;
+                cmd.CommandType = CommandType.StoredProcedure;
+                switch (DBConfig.DbType)
+                {
+                    case DataBaseType.sqlServer:
+                        OpenConnetion(conn);
+                        System.Data.SqlClient.SqlCommandBuilder.DeriveParameters(cmd as System.Data.SqlClient.SqlCommand);
+                        conn.Close();
+                        break;
+                    case DataBaseType.Oracle:
+                        OpenConnetion(conn);
+                        Oracle.DataAccess.Client.OracleCommandBuilder.DeriveParameters(
+                            cmd as Oracle.DataAccess.Client.OracleCommand);
+                        conn.Close();
+                        break;
+                    case DataBaseType.mySql:
+                        OpenConnetion(conn);
+                        MySql.Data.MySqlClient.MySqlCommandBuilder.DeriveParameters(
+                            cmd as MySql.Data.MySqlClient.MySqlCommand);
+                        conn.Close();
+                        break;
+                    default:
+                        throw new DAO.DAOException.DbException("暂时不支持该数据库类型");
+                }
+                if (!includeReturnValueParameter)
+                {
+                    cmd.Parameters.RemoveAt(0);
+                }
+
+                DbParameter[] discoveredParameters = new DbParameter[cmd.Parameters.Count];
+                cmd.Parameters.CopyTo(discoveredParameters, 0);
+                foreach (DbParameter discoveredParameter in discoveredParameters)
+                {
+                    discoveredParameter.Value = DBNull.Value;
+                }
+                return discoveredParameters;
             }
-            return discoveredParameters;
+          
         }
         #endregion Parameter Discovery Functions
 
@@ -427,20 +443,22 @@ namespace Sam.DAO
                 try
                 {
                     OpenConnetion(conn);
-                    IDataReader dr = ExecuteReader(conn, procedureName, CommandType.StoredProcedure, paras);
-                    if (!dr.Read())
+                    using (IDataReader dr = ExecuteReader(conn, procedureName, CommandType.StoredProcedure, paras))
                     {
+                        if (!dr.Read())
+                        {
+                            dr.Close();
+                            return null;
+                        }
+                        DataTable dt = new DataTable();
+                        dt.Load(dr);
                         dr.Close();
-                        return null;
+                        return dt;
                     }
-                    DataTable dt = new DataTable();
-                    dt.Load(dr);
-                    dr.Close();
-                    return dt;
                 }
                 catch (DbException e)
                 {
-                    throw e;
+                    throw new DAOException.DbException("RunSPDataTable Error!\t\tprocedureName:" + procedureName, e);
                 }
             }
         }
@@ -453,6 +471,7 @@ namespace Sam.DAO
         public void Dispose()
         {
             Factory = null;
+            ParamCache = null;
         }
 
     }

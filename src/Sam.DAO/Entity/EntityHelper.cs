@@ -289,7 +289,6 @@ namespace Sam.DAO.Entity
             sqlinfo.Sql = string.Format(sql, entity.GetTableName(), whereSql);
             foreach (var kv in keyvalues)
             {
-              //  KeyValue kv = param.GetKeyValue();
                 DbParameter parameter = _dbHelper.CreateParameter();
                 DbParameterProviderFactory.CreateParameterProvider(_dbHelper.GetDbConfig.DbType).SetParameter(_dbHelper.GetDbConfig.PreParameterChar + kv.LinqKeyName, kv.Value, kv.ValueType, ref parameter);
                 sqlinfo.Parameters.Add(parameter);
@@ -319,8 +318,7 @@ namespace Sam.DAO.Entity
         public IEnumerable<T> Select<T>(string sql,params DbParameter[] parameters) where T : BaseEntity, new()
         {
             var sqlInfo = new SqlInfo {Sql = sql};
-            if (parameters != null && parameters.Length > 0)
-                sqlInfo.Parameters = parameters.ToList();
+            sqlInfo.Parameters = parameters;
             var dt = _dbHelper.ExecuteDataTable(sqlInfo);
             return FromDataTable<T>(dt);
         }
@@ -347,7 +345,7 @@ namespace Sam.DAO.Entity
             }
             else
             {
-                sqlinfo.Sql = CreatePageSql(entity, 1, 500, whereSql, string.Empty);
+                sqlinfo.Sql = CreatePageSql(entity, 1, 500, string.Empty, string.Empty);
             }
             if (properties != null)
             {
@@ -367,13 +365,7 @@ namespace Sam.DAO.Entity
                 sqlinfo.Parameters.Add(parameter);
             }
 
-            DataTable dt;
-            if (sqlinfo.Parameters.Count == 0)
-                dt = _dbHelper.ExecuteDataTable(sqlinfo.Sql);
-            else
-            {
-                dt = _dbHelper.ExecuteDataTable(sqlinfo);
-            }
+            DataTable dt = _dbHelper.ExecuteDataTable(sqlinfo);
             return FromDataTable<T>(dt);
         }
 
@@ -414,11 +406,8 @@ namespace Sam.DAO.Entity
                     DbParameterProviderFactory.CreateParameterProvider(_dbHelper.GetDbConfig.DbType).SetParameter(_dbHelper.GetDbConfig.PreParameterChar + kv.LinqKeyName, kv.Value, kv.ValueType, ref parameter);
                     sqlinfo.Parameters.Add(parameter);
                 }
-                DataTable dt;
-                if (sqlinfo.Parameters.Count == 0)
-                    dt = _dbHelper.ExecuteDataTable(sqlinfo.Sql);
-                else
-                    dt = _dbHelper.ExecuteDataTable(sqlinfo);
+
+                DataTable dt = _dbHelper.ExecuteDataTable(sqlinfo);
                 return FromDataTable<T>(dt);
             }
             return null;

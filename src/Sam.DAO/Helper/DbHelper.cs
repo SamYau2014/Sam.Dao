@@ -11,19 +11,16 @@ namespace Sam.DAO
     public class DbHelper:DB,IDisposable
     {
         private IDbConnection _conn;                              //连接对象
-       // private DbProviderFactory _factory;                       //数据库服务提供工厂
-      //  private readonly DbConfig _dbConfig;                                //数据库配置
-     //   private Hashtable paramCache = Hashtable.Synchronized(new Hashtable());
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="connectionString"></param>
         /// <param name="providerName"></param>
-        public DbHelper(string connectionString, string providerName, DbConfig dbconfig)
-            : base(providerName, dbconfig)
+        public DbHelper(DbConfig dbconfig)
+            : base(dbconfig)
         {
             this._conn = this.Factory.CreateConnection();
-            this._conn.ConnectionString = connectionString;
+            this._conn.ConnectionString = dbconfig.ConnectionString;
         }
 
         /// <summary>

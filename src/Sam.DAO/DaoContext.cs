@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Linq.Expressions;
-using Sam.DAO.DAOException;
 using Sam.DAO.config;
 using Sam.DAO.Entity;
-using Sam.DAO.DAOException;
 using Sam.DAO.Tool;
 
 namespace Sam.DAO
@@ -19,7 +16,6 @@ namespace Sam.DAO
      */
     public sealed class DaoContext:IDaoContext,IDisposable
     {
-       // private DbHelper _dbHelper;
         private DB _dbHelper;
         private EntityHelper _entityHelper;
         private readonly DbConfig _dbConfig;
@@ -41,7 +37,7 @@ namespace Sam.DAO
             }
             _dbConfig = new DbConfig();
             DbConfigLoader.Load(dbName, _dbConfig);
-            _dbHelper = new PoolDbHelper(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
+            _dbHelper = new PoolDbHelper(_dbConfig);
             _entityHelper = new EntityHelper(_dbHelper);
         }
 
@@ -49,7 +45,7 @@ namespace Sam.DAO
         {
             _dbConfig = new DbConfig();
             DbConfigLoader.Load(name, _dbConfig);
-            _dbHelper = new PoolDbHelper(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
+            _dbHelper = new PoolDbHelper( _dbConfig);
             _entityHelper = new EntityHelper(_dbHelper);
         }
 
@@ -57,7 +53,7 @@ namespace Sam.DAO
         {
              _dbConfig = new DbConfig();
             DbConfigLoader.Load(connectionString, providerName,_dbConfig);
-            _dbHelper = new PoolDbHelper(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
+            _dbHelper = new PoolDbHelper( _dbConfig);
             _entityHelper = new EntityHelper(_dbHelper);
         }
 
@@ -65,7 +61,7 @@ namespace Sam.DAO
         {
             _dbConfig = new DbConfig();
             DbConfigLoader.Load(connectionString, dbType,_dbConfig);
-            _dbHelper = new PoolDbHelper(_dbConfig.ConnectionString, _dbConfig.ProviderName, _dbConfig);
+            _dbHelper = new PoolDbHelper(_dbConfig);
             _entityHelper = new EntityHelper(_dbHelper);
         }
 
