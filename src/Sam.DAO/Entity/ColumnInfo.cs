@@ -90,7 +90,7 @@ namespace Sam.DAO.Entity
             if (property == null)
                 return propertyName;
             object[] attributes = property.GetCustomAttributes(typeof(PropertyAttribute), false);
-            if (attributes == null || attributes.Length == 0)
+            if (attributes.Length == 0)
                 return propertyName;
             PropertyAttribute propertyAttribute = (PropertyAttribute)attributes[0];
             return propertyAttribute == null ? propertyName : propertyAttribute.Name;

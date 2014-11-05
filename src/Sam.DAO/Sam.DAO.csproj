@@ -67,8 +67,9 @@
     <Compile Include="config\DbConfig.cs" />
     <Compile Include="config\DbConfigLoader.cs" />
     <Compile Include="DaoContext.cs" />
-    <Compile Include="DB.cs" />
-    <Compile Include="DbHelper.cs" />
+    <Compile Include="DaoInterface\IDaoContextRead.cs" />
+    <Compile Include="DaoInterface\IDaoContextWrite.cs" />
+    <Compile Include="DaoInterface\ISqlOperation.cs" />
     <Compile Include="Entity\BaseEntity.cs" />
     <Compile Include="Entity\ColumnInfo.cs" />
     <Compile Include="Entity\CombinationEntity.cs" />
@@ -79,14 +80,15 @@
     </Compile>
     <Compile Include="Entity\IEntity.cs" />
     <Compile Include="Entity\JoinResult.cs" />
-    <Compile Include="Entity\LikeType.cs" />
     <Compile Include="Exception\DAOException.cs" />
     <Compile Include="Exception\DbException.cs" />
     <Compile Include="Exception\LinqException.cs" />
+    <Compile Include="Helper\DB.cs" />
+    <Compile Include="Helper\DbHelper.cs" />
+    <Compile Include="Helper\PoolDbHepler.cs" />
     <Compile Include="IBaseServer.cs" />
     <Compile Include="IDaoContext.cs" />
     <Compile Include="Linq\ExpressionParser.cs" />
-    <Compile Include="PoolDbHepler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tool\DaoDbProviderFactories.cs" />
     <Compile Include="Tool\DataBaseType.cs" />

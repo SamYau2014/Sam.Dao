@@ -2,7 +2,7 @@
 
 namespace Sam.DAO.Builder.Data
 {
-    public class KeyValue
+    internal class KeyValue
     {
         public string Key { get; set; }
         public object Value { get; set; }

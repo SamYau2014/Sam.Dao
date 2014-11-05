@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using Sam.DAO.Builder.Clause;
+using Sam.DAO.config;
 
 namespace Sam.DAO.Builder.Data
 {
-    public abstract class Condition:IClause
+    internal abstract class Condition : IClause
     {
+        public abstract string ToSql(ref ICollection<DbParameter> parameters, DB dbhelp);
 
-        //public abstract string ToSql();
-
-        public abstract string ToSql(ref IList<KeyValue> kvs, config.DbConfig config);
-
-        protected string GetValueString(object o, config.DbConfig config)
+        protected string GetValueString(object o, DbConfig config)
         {
             if (o == null)
                 return "NULL";

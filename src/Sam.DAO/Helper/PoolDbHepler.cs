@@ -8,7 +8,7 @@ using Sam.DAO.Tool;
 
 namespace Sam.DAO
 {
-    public class PoolDbHelper :DB,IDisposable
+    internal class PoolDbHelper : DB, IDisposable
     {
         private readonly string _connectionString;
 
@@ -31,6 +31,9 @@ namespace Sam.DAO
 
         private void OpenConnetion(IDbConnection conn)
         {
+            if (conn.State == ConnectionState.Broken)
+                conn.Close();
+
             if (conn.State == ConnectionState.Closed)
             {
                 try
@@ -116,23 +119,6 @@ namespace Sam.DAO
                 {
                     if (dr != null) dr.Dispose();
                     cmd.Dispose();
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// 添加参数
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="paras"></param>
-        private void AddParameters(IDbCommand cmd, DbParameter[] paras)
-        {
-            if (paras != null)
-            {
-                foreach (DbParameter para in paras)
-                {
-                    cmd.Parameters.Add(para);
                 }
             }
         }
@@ -468,10 +454,9 @@ namespace Sam.DAO
         /// <summary>
         /// 释放资源
         /// </summary>
-        public void Dispose()
+        public new void Dispose()
         {
-            Factory = null;
-            ParamCache = null;
+            base.Dispose();
         }
 
     }

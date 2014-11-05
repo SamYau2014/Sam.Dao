@@ -1,13 +1,15 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Data.Common;
+using System.Text;
 using Sam.DAO.Builder.Data;
 
 namespace Sam.DAO.Builder.Clause
 {
-    public class InClause:Condition
+    internal class InClause : Condition
     {
-        private string _column;
-        private object[] _values;
-        private bool _inFlag;
+        private readonly string _column;
+        private readonly object[] _values;
+        private readonly bool _inFlag;
 
         public InClause(string column,object[] values,bool inFlag)
         {
@@ -16,26 +18,7 @@ namespace Sam.DAO.Builder.Clause
             _inFlag = inFlag;
         }
 
-       /* public override string ToSql()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(" ");
-            sb.Append(_column);
-            if (_inFlag)
-                sb.Append(" in(");
-            else
-                sb.Append(" not in(");
-            foreach(object o in _values)
-            {
-                sb.Append(base.GetValueString(o));
-                sb.Append(",");
-            }
-            sb = sb.Remove(sb.Length - 1, 1);
-            sb.Append(") ");
-            return sb.ToString();
-        }*/
-
-        public override string ToSql(ref System.Collections.Generic.IList<KeyValue> kvs,config.DbConfig config)
+        public override string ToSql(ref ICollection<DbParameter> parameters, DB dbhelp)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(" ");
@@ -46,7 +29,7 @@ namespace Sam.DAO.Builder.Clause
                 sb.Append(" not in(");
             foreach (object o in _values)
             {
-                sb.Append(base.GetValueString(o,config));
+                sb.Append(GetValueString(o, dbhelp.GetDbConfig));
                 sb.Append(",");
             }
             sb = sb.Remove(sb.Length - 1, 1);

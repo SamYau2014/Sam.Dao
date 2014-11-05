@@ -49,8 +49,14 @@ namespace Sam.DAO
 
         public virtual IEnumerable<T> Select<T>(Expression<Func<T, bool>> func = null) where T : BaseEntity, new()
         {
-            return this.GetDaoContext().Select<T>(func);
+            return this.GetDaoContext().Select(func);
         }
+
+        public IEnumerable<T> Select<T>(Expression<Func<T, bool>> func, string[] properties) where T : BaseEntity, new()
+        {
+            return this.GetDaoContext().Select(func, properties);
+        }
+
         #region 分页查询
         /// <summary>
         /// 分页查询
@@ -224,6 +230,21 @@ namespace Sam.DAO
         public virtual DataTable ExecuteDataTable(SqlInfo sqlInfo)
         {
             return this.GetDaoContext().ExecuteDataTable(sqlInfo);
+        }
+
+        public int GetSerial(string tableName)
+        {
+            return this.GetDaoContext().GetSerial(tableName);
+        }
+
+        public DataTable GetTables()
+        {
+            return this.GetDaoContext().GetTables();
+        }
+
+        public IEnumerable<ColumnInfo> GetTableSchema(string tableName)
+        {
+            return this.GetDaoContext().GetTableSchema(tableName);
         }
 
         public virtual object ExecuteScalar(string sql)

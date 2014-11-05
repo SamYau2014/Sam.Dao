@@ -10,10 +10,10 @@ using Sam.DAO.config;
 
 namespace Sam.DAO
 {
-    public abstract class DB:IDisposable
+    internal abstract class DB : IDisposable
     {
         protected DbProviderFactory Factory; //数据库服务提供工厂
-        protected readonly DbConfig DBConfig; //数据库配置
+        protected DbConfig DBConfig; //数据库配置
         protected Hashtable ParamCache;
 
         protected DB(DbConfig dbconfig)
@@ -92,7 +92,9 @@ namespace Sam.DAO
 
         public void Dispose()
         {
-           
+            DBConfig = null;
+            Factory = null;
+            ParamCache = null;
         }
     }
 }

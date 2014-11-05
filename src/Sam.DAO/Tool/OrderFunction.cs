@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Sam.DAO.InnerException;
+using Sam.DAO.DAOException;
 
 namespace Sam.DAO.Tool
 {

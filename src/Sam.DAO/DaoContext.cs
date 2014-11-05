@@ -18,7 +18,7 @@ namespace Sam.DAO
     {
         private DB _dbHelper;
         private EntityHelper _entityHelper;
-        private readonly DbConfig _dbConfig;
+        private DbConfig _dbConfig;
 
         #region 构造函数
         /// <summary>
@@ -70,7 +70,7 @@ namespace Sam.DAO
         #region 获取表结构 支持mysql，sqlserver，oracle，其他数据库未测试
         public DataTable GetTables()
         {
-            return _entityHelper.GetTables();
+            return _dbHelper.GetTables();
         }
 
         public IEnumerable<ColumnInfo> GetTableSchema(string tableName)
@@ -369,6 +369,7 @@ namespace Sam.DAO
         {
             _dbHelper.Dispose();
             _dbHelper = null;
+            _dbConfig = null;
             _entityHelper = null;
         }
         #endregion

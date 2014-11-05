@@ -5,7 +5,7 @@ using System.Configuration;
 
 namespace Sam.DAO.config
 {
-    public static class DbConfigLoader
+    internal static class DbConfigLoader
     {
 
         /// <summary>

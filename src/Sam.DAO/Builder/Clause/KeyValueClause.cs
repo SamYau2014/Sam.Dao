@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
+using System.Data.Common;
 using Sam.DAO.Builder.Data;
+using Sam.DAO.Tool;
 
 namespace Sam.DAO.Builder.Clause
 {
-    public class KeyValueClause:Condition
+    internal class KeyValueClause : Condition
     {
         private KeyValue _kv;
-        private string _operator;
-        private int _num = 0;
+        private readonly string _operator;
 
         public KeyValueClause(string key, object value, string op, int num)
             : this(new KeyValue(key, value,num), op)
         {
-            _num = num;
         }
         public KeyValueClause(string key, object value, string op):this(new KeyValue(key,value,0),op)
         {
@@ -25,24 +25,14 @@ namespace Sam.DAO.Builder.Clause
             _operator = op;
         }
 
-      /*  public override string ToSql()
-        {
-            if (_operator == "like")
-                return string.Format(" {0} {1} {2} ", _kv.Key, _operator, base.GetValueString(_kv.Value));
-            return string.Format(" {0} {1} Linq{0}{2} ", _kv.Key, _operator, _num);
-        }*/
 
-        public override string ToSql(ref IList<KeyValue> kvs, config.DbConfig config)
+        public override string ToSql(ref ICollection<DbParameter> parameters, DB dbhelp)
         {
-            kvs.Add(_kv);
-            //if (_operator == "like")
-            //    return string.Format(" {0} {1} {2} ", _kv.Key, _operator, base.GetValueString(_kv.Value));
-            return string.Format(" {0} {1} Linq{0}{2} ", _kv.Key, _operator, _num==0?"":_num.ToString());
-        }
-
-        public KeyValue GetKeyValue()
-        {
-            return this._kv;
+            DbParameter parameter = dbhelp.CreateParameter();
+            DbParameterProviderFactory.CreateParameterProvider(dbhelp.GetDbConfig.DbType).SetParameter(
+                dbhelp.GetDbConfig.PreParameterChar + _kv.LinqKeyName, _kv.NullableValue, _kv.ValueType, ref parameter);
+            parameters.Add(parameter);
+            return string.Format(" {0} {1} {3}{2} ", _kv.Key, _operator, _kv.LinqKeyName, dbhelp.GetDbConfig.PreParameterChar);
         }
     }
 }

@@ -8,7 +8,7 @@ using Sam.DAO.Tool;
 
 namespace Sam.DAO
 {
-    public class DbHelper:DB,IDisposable
+    internal class DbHelper : DB, IDisposable
     {
         private IDbConnection _conn;                              //连接对象
         /// <summary>
@@ -86,10 +86,9 @@ namespace Sam.DAO
                 dr.Close();
                 return dt;
             }
-            catch(DbException ex)
+            catch(DbException e)
             {
-                throw ex;
-              //  return null;
+                throw e;
             }
             finally
             {
@@ -104,6 +103,9 @@ namespace Sam.DAO
         /// <returns></returns>
         private bool OpenConnection()
         {
+            if (_conn.State == ConnectionState.Broken)
+                _conn.Close();
+
             if (_conn.State == ConnectionState.Closed)
             {
                 try
@@ -114,10 +116,8 @@ namespace Sam.DAO
                 catch (DbException e)
                 {
                     throw e;
-                    return false;
                 }
             }
-            else
                 return true;
         }
 
@@ -462,12 +462,12 @@ namespace Sam.DAO
         /// <summary>
         /// 释放资源
         /// </summary>
-        public void Dispose()
+        public new void Dispose()
         {
             CloseConnection();
             _conn.Dispose();
             _conn = null;
-            Factory = null;
+            base.Dispose();
         }
     }
 }

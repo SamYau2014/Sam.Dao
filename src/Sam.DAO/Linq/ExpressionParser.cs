@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Sam.DAO.Builder.Clause;
 using Sam.DAO.Builder.Data;
@@ -10,7 +11,7 @@ using Sam.DAO.DAOException;
 
 namespace Sam.DAO.Linq
 {
-    public static class ExpressionParser<T> where T : BaseEntity
+    internal static class ExpressionParser<T> where T : BaseEntity
     {
         public static Condition Parse(Expression<Func<T, bool>> expr)
         {
@@ -99,10 +100,7 @@ namespace Sam.DAO.Linq
             var ie = GetRightValue(e.Arguments[1]);
             if (ie is IEnumerable)
             {
-                foreach (var obj in (IEnumerable)GetRightValue(e.Arguments[1]))
-                {
-                    list.Add(obj);
-                }
+                list.AddRange(((IEnumerable) GetRightValue(e.Arguments[1])).Cast<object>());
             }
             else
             {

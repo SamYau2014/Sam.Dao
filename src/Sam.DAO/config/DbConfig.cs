@@ -3,7 +3,7 @@ using Sam.DAO.Tool;
 
 namespace Sam.DAO.config
 {
-    public class DbConfig
+    internal class DbConfig
     {
         #region 分页sql
         private const string _mysqlPageSql = "select * from {0} {3} order by {4} limit {1},{2}";

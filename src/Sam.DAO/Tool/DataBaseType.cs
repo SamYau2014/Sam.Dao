@@ -6,6 +6,6 @@ namespace Sam.DAO.Tool
     /// </summary>
     public enum DataBaseType
     {
-        sqlServer, mySql, Oracle, Oledb, Odbc,SQLite, unknown
+      unknown=0,  sqlServer=1, mySql=2, SystemOracle=4,Oracle=8, Oledb=16, Odbc=32,SQLite=64
     }
 }

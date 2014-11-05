@@ -43,17 +43,17 @@ namespace Sam.DAO.Tool
         /// <summary>
         /// NET中的数值类型集
         /// </summary>
-        private static List<Type> NetNumberTypeList;
+        private static readonly List<Type> NetNumberTypeList;
 
         /// <summary>
         /// NET中的字符串类型
         /// </summary>
-        private static List<Type> NetStringTypeList;
+        private static readonly List<Type> NetStringTypeList;
 
         /// <summary>
         /// NET中的时间类型
         /// </summary>
-        private static List<Type> NetDateTypeList;
+        private static readonly List<Type> NetDateTypeList;
         #endregion
 
         #region 静态构造函数 初始化各NET类型和数据库类型
@@ -195,8 +195,6 @@ namespace Sam.DAO.Tool
             }
             if (dbStringTypeList.Contains(dbType))
             {
-                //if (dbType == "char" || dbType == "nchar")
-                //    return "char";
                 return "string";
             }
             if (dbDateTypeList.Contains(dbType))

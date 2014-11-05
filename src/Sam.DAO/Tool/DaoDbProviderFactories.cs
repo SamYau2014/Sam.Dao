@@ -27,9 +27,10 @@ namespace Sam.DAO.Tool
                 case "MySql.Data.MySqlClient":
                     return new MySql.Data.MySqlClient.MySqlClientFactory();
                 case "System.Data.OracleClient":
-                     return new Oracle.DataAccess.Client.OracleClientFactory();
+                case "Oracle.DataAccess.Client":
+                    return new Oracle.DataAccess.Client.OracleClientFactory();
                 case "System.Data.SQLite":
-                     return new System.Data.SQLite.SQLiteFactory();
+                    return new System.Data.SQLite.SQLiteFactory();
                 default:
                     return DbProviderFactories.GetFactory(providerInvariantName);
             }

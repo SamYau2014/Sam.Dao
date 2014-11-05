@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Data.Common;
 using Sam.DAO.Builder.Data;
 namespace Sam.DAO.Builder.Clause
 {
-    public interface IClause
+    internal interface IClause
     {
-       // string ToSql();
-
-        string ToSql(ref IList<KeyValue> kvs,config.DbConfig config);
+        string ToSql(ref ICollection<DbParameter> parameters, DB dbhelp);
     }
 }

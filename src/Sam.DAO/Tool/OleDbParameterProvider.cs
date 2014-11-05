@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using System.Data.OleDb;
+using Sam.DAO.DAOException;
 
 namespace Sam.DAO.Tool
 {

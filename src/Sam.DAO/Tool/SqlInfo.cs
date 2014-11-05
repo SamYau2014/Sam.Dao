@@ -11,7 +11,7 @@ namespace Sam.DAO.Tool
     {
         public string Sql { get; set; }
 
-        public IList<DbParameter> Parameters { get;  set; }
+        public ICollection<DbParameter> Parameters { get; set; }
 
         public SqlInfo()
         {
