@@ -463,7 +463,7 @@ namespace Sam.DAO.Entity
             {
                 sqlInfos[i] = CreateInsertSqlInfo(entities[i]);
             }
-           return _dbHelper.ExecuteTransaction(sqlInfos);
+           return _dbHelper.ExecuteTransaction(IsolationLevel.Unspecified,sqlInfos);
         }
 
         private SqlInfo CreateInsertSqlInfo<T>(T entity) where T : BaseEntity

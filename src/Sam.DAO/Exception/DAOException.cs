@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Sam.DAO.InnerException
+namespace Sam.DAO.DAOException
 {
-    public class DaoException : Exception
+    public class DaoException : System.Exception
     {
         public DaoException() { }
         public DaoException(string errorMessage) : base(errorMessage) { }

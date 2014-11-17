@@ -75,6 +75,7 @@
     <Compile Include="Entity\CombinationEntity.cs" />
     <Compile Include="Entity\CompareType.cs" />
     <Compile Include="Entity\EntityHelper.cs" />
+    <Compile Include="ExFunc\AggregateFunc.cs" />
     <Compile Include="ExFunc\ExFunc.cs">
       <SubType>Code</SubType>
     </Compile>

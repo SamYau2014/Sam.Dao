@@ -67,6 +67,11 @@ namespace Sam.DAO
 
         #endregion
 
+        public DB GetDbHelper()
+        {
+            return _dbHelper;
+        }
+
         #region 获取表结构 支持mysql，sqlserver，oracle，其他数据库未测试
         public DataTable GetTables()
         {
@@ -305,12 +310,22 @@ namespace Sam.DAO
         /// </summary>
         public bool ExecuteTransaction(params SqlInfo[] sqlInfos)
         {
-            return _dbHelper.ExecuteTransaction(sqlInfos);
+            return _dbHelper.ExecuteTransaction(IsolationLevel.Unspecified, sqlInfos);
         }
 
         public bool ExecuteTransaction(params string[] sqls)
         {
-            return _dbHelper.ExecuteTransaction(sqls);
+            return _dbHelper.ExecuteTransaction(IsolationLevel.Unspecified,sqls);
+        }
+
+        public bool ExecuteTransaction(IsolationLevel isolationLevel, params SqlInfo[] sqlInfos)
+        {
+            return _dbHelper.ExecuteTransaction(isolationLevel,sqlInfos);
+        }
+
+        public bool ExecuteTransaction(IsolationLevel isolationLevel, params string[] sqls)
+        {
+            return _dbHelper.ExecuteTransaction(isolationLevel, sqls);
         }
 
         public DataTable ExecuteDataTable(string sql)

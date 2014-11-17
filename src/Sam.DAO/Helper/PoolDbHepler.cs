@@ -260,8 +260,8 @@ namespace Sam.DAO
                     try
                     {
                         OpenConnetion(conn);
-                        var result=cmd.ExecuteScalar();
-                        return result;
+                        return cmd.ExecuteScalar();
+
                     }
                     catch (DbException e)
                     {
@@ -278,12 +278,12 @@ namespace Sam.DAO
         /// </summary>
         /// <param name="sqls"></param>
         /// <returns></returns>
-        public override bool ExecuteTransaction(params SqlInfo[] sqlInfos)
+        public override bool ExecuteTransaction(IsolationLevel isolationLevel, params SqlInfo[] sqlInfos)
         {
             using (IDbConnection conn = this.CreateConnection())
             {
                 OpenConnetion(conn);
-                using (IDbTransaction transaction = conn.BeginTransaction())
+                using (IDbTransaction transaction = (isolationLevel == IsolationLevel.Unspecified? conn.BeginTransaction() : conn.BeginTransaction(isolationLevel)))
                 {
                     using (IDbCommand cmd = conn.CreateCommand())
                     {
@@ -317,11 +317,11 @@ namespace Sam.DAO
         /// </summary>
         /// <param name="sqls"></param>
         /// <returns></returns>
-        public override bool ExecuteTransaction(params string[] sqls)
+        public override bool ExecuteTransaction(IsolationLevel isolationLevel, params string[] sqls)
         {
             using (IDbConnection conn = this.CreateConnection())
             {
-                using (IDbTransaction transaction = conn.BeginTransaction())
+                using (IDbTransaction transaction = (isolationLevel == IsolationLevel.Unspecified ? conn.BeginTransaction() : conn.BeginTransaction(isolationLevel)))
                 {
                     using (IDbCommand cmd = conn.CreateCommand())
                     {
@@ -378,28 +378,24 @@ namespace Sam.DAO
             {
                 cmd.CommandText = procedureName;
                 cmd.CommandType = CommandType.StoredProcedure;
+                OpenConnetion(conn);
                 switch (DBConfig.DbType)
                 {
                     case DataBaseType.sqlServer:
-                        OpenConnetion(conn);
                         System.Data.SqlClient.SqlCommandBuilder.DeriveParameters(cmd as System.Data.SqlClient.SqlCommand);
-                        conn.Close();
                         break;
                     case DataBaseType.Oracle:
-                        OpenConnetion(conn);
                         Oracle.DataAccess.Client.OracleCommandBuilder.DeriveParameters(
                             cmd as Oracle.DataAccess.Client.OracleCommand);
-                        conn.Close();
                         break;
                     case DataBaseType.mySql:
-                        OpenConnetion(conn);
                         MySql.Data.MySqlClient.MySqlCommandBuilder.DeriveParameters(
                             cmd as MySql.Data.MySqlClient.MySqlCommand);
-                        conn.Close();
                         break;
                     default:
-                        throw new DAO.DAOException.DbException("暂时不支持该数据库类型");
+                        throw new DAOException.DbException("暂时不支持该数据库类型");
                 }
+                conn.Close();
                 if (!includeReturnValueParameter)
                 {
                     cmd.Parameters.RemoveAt(0);

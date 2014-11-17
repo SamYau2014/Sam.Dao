@@ -10,7 +10,7 @@ using Sam.DAO.config;
 
 namespace Sam.DAO
 {
-    internal abstract class DB : IDisposable
+    public abstract class DB : IDisposable
     {
         protected DbProviderFactory Factory; //数据库服务提供工厂
         protected DbConfig DBConfig; //数据库配置
@@ -80,9 +80,9 @@ namespace Sam.DAO
 
         public abstract object ExecuteScalar(SqlInfo sqlinfo);
 
-        public abstract bool ExecuteTransaction(params SqlInfo[] sqlInfos);
+        public abstract bool ExecuteTransaction(IsolationLevel isolationLevel,params SqlInfo[] sqlInfos);
 
-        public abstract bool ExecuteTransaction(params string[] sqls);
+        public abstract bool ExecuteTransaction(IsolationLevel isolationLevel, params string[] sqls);
 
         public abstract DbParameter[] GetSpParameterSet(string procedureName);
 

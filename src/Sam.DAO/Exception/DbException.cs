@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Sam.DAO.InnerException
+namespace Sam.DAO.DAOException
 {
     public class DbException : DaoException
     {

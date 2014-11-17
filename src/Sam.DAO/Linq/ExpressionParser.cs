@@ -100,7 +100,11 @@ namespace Sam.DAO.Linq
             var ie = GetRightValue(e.Arguments[1]);
             if (ie is IEnumerable)
             {
-                list.AddRange(((IEnumerable) GetRightValue(e.Arguments[1])).Cast<object>());
+                var arr = ie as IEnumerable;
+                if (!(arr is string))
+                    list.AddRange((arr).Cast<object>());
+                else
+                    list.Add(ie);
             }
             else
             {

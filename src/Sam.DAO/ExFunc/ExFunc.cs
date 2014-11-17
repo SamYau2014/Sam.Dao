@@ -92,7 +92,7 @@ namespace Sam.DAO.ExFunc
                 return columnName + " asc ";
             return columnName + " desc ";
         }
-        static string ExpressionRouter(Expression exp, object obj)
+       static string ExpressionRouter(Expression exp, object obj)
         {
             if (exp is MemberExpression)
             {

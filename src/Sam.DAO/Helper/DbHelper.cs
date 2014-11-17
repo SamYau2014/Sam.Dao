@@ -11,11 +11,10 @@ namespace Sam.DAO
     internal class DbHelper : DB, IDisposable
     {
         private IDbConnection _conn;                              //连接对象
+
         /// <summary>
         /// 构造函数
         /// </summary>
-        /// <param name="connectionString"></param>
-        /// <param name="providerName"></param>
         public DbHelper(DbConfig dbconfig)
             : base(dbconfig)
         {
@@ -288,18 +287,13 @@ namespace Sam.DAO
             } 
         }
 
-        /// <summary>
-        /// ExecuteTransaction
-        /// </summary>
-        /// <param name="sqls"></param>
-        /// <returns></returns>
-        public override bool ExecuteTransaction(params SqlInfo[] sqlInfos)
+        public override bool ExecuteTransaction(IsolationLevel isolationLevel, params SqlInfo[] sqlInfos)
         {
             if (!OpenConnection())
             {
                 throw new Exception("连接数据库失败！");
             }
-            IDbTransaction transaction = _conn.BeginTransaction();
+            IDbTransaction transaction = _conn.BeginTransaction(isolationLevel);
             IDbCommand cmd = _conn.CreateCommand();
             cmd.Transaction = transaction;
             cmd.CommandType = CommandType.Text;
@@ -326,18 +320,13 @@ namespace Sam.DAO
             }
         }
 
-        /// <summary>
-        /// ExecuteTransaction
-        /// </summary>
-        /// <param name="sqls"></param>
-        /// <returns></returns>
-        public override bool ExecuteTransaction(params string[] sqls)
+        public override bool ExecuteTransaction(IsolationLevel isolationLevel, params string[] sqls)
         {
             if (!OpenConnection())
             {
                 throw new Exception("连接数据库失败！");
             }
-            IDbTransaction transaction = _conn.BeginTransaction();
+            IDbTransaction transaction = _conn.BeginTransaction(isolationLevel);
             IDbCommand cmd = _conn.CreateCommand();
             cmd.Transaction = transaction;
             cmd.CommandType = CommandType.Text;

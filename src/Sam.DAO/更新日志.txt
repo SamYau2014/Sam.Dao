@@ -16,3 +16,9 @@
 2014-10-22 加入外键表查询功能
 
 2014-11-3 经过多线程并发测试，PoolDbHelper可支持连接池并发，DbHelper仅支持单线程下执行。
+
+2014-11-4 Lambda表达式加入支持非(!)操作。
+
+2014-11-5 IDaoContext接口分拆到3个接口IDaoContextRead、IDaoContextWrite、ISqlOperation,修改EntityHelper中LinqToSql直接获取Dbparameter。
+
+2014-11-6 加入Sum、Min、Max、Avg等拓展方法。

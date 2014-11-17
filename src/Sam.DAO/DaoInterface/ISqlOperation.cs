@@ -19,6 +19,10 @@ namespace Sam.DAO.DaoInterface
 
         bool ExecuteTransaction(params string[] sqls);
 
+        bool ExecuteTransaction(IsolationLevel isolationLevel, params SqlInfo[] sqlInfos);
+
+        bool ExecuteTransaction(IsolationLevel isolationLevel, params string[] sqls);
+
         DataTable ExecuteDataTable(string sql);
 
         DataTable ExecuteDataTable(SqlInfo sqlInfo);

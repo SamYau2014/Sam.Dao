@@ -222,6 +222,16 @@ namespace Sam.DAO
             return this.GetDaoContext().ExecuteTransaction(sqls);
         }
 
+        public bool ExecuteTransaction(IsolationLevel isolationLevel, params SqlInfo[] sqlInfos)
+        {
+            return this.GetDaoContext().ExecuteTransaction(isolationLevel,sqlInfos);
+        }
+
+        public bool ExecuteTransaction(IsolationLevel isolationLevel, params string[] sqls)
+        {
+            return this.GetDaoContext().ExecuteTransaction(isolationLevel,sqls);
+        }
+
         public virtual DataTable ExecuteDataTable(string sql)
         {
             return this.GetDaoContext().ExecuteDataTable(sql);
@@ -270,6 +280,11 @@ namespace Sam.DAO
         public virtual DataTable RunSPDataTable(string procedureName, params DbParameter[] paras)
         {
             return this.GetDaoContext().RunSPDataTable(procedureName, paras);
+        }
+
+        public virtual DB GetDbHelper()
+        {
+            return GetDaoContext().GetDbHelper();
         }
 
         #endregion
