@@ -59,6 +59,16 @@ namespace Sam.DAO.Entity
             return list;
         }
 
+        private IEnumerable<T> FromDataReader<T>(IDataReader reader) where T : IEntity, new()
+        {
+            while(reader.Read())
+            {
+                T entity = new T();
+                entity.FromDataReader(reader);
+                yield return entity;
+            }
+        }
+
         //给关联属性赋值
         private void BindRalationProperty(IEntity entity, BaseEntity foreignEntity)  
         {
@@ -260,8 +270,18 @@ namespace Sam.DAO.Entity
             }
             string whereSql = " where " + CreatePrimaryKeySql(entity);
             string sql = string.Format(SelectFormat, entity.GetTableName(), whereSql);
-            DataTable dt = _dbHelper.ExecuteDataTable(sql);
-            return dt==null?null:FromDataTable<T>(dt).ToArray()[0];
+            using(IDbConnection conn = _dbHelper.GetCollection())
+            {
+                using (IDataReader reader = _dbHelper.ExecuteReader(conn,sql,CommandType.Text))
+                while(reader.Read())
+                {
+                    var obj = new T();
+                    obj.FromDataReader(reader);
+                    return obj;
+                }
+                return null;
+            }
+
         }
 
         public int Count<T>(Expression<Func<T, bool>> func) where T : BaseEntity, new()
@@ -304,8 +324,15 @@ namespace Sam.DAO.Entity
         public IEnumerable<T> Select<T>(string sql,params DbParameter[] parameters) where T : BaseEntity, new()
         {
             var sqlInfo = new SqlInfo {Sql = sql, Parameters = parameters};
-            var dt = _dbHelper.ExecuteDataTable(sqlInfo);
-            return FromDataTable<T>(dt);
+            using (IDbConnection conn = _dbHelper.GetCollection())
+            {
+                using (IDataReader reader = _dbHelper.ExecuteReader(conn, sqlInfo))
+                {
+                    return FromDataReader<T>(reader);
+                }
+            }
+            //var dt = _dbHelper.ExecuteDataTable(sqlInfo);
+            //return FromDataTable<T>(dt);
         }
 
         /// <summary>
@@ -343,9 +370,15 @@ namespace Sam.DAO.Entity
                 int pos = sqlinfo.Sql.IndexOf('*');
                 sqlinfo.Sql = sqlinfo.Sql.Substring(0, pos) + columnNames + sqlinfo.Sql.Substring(pos + 1);
             }
-
-            DataTable dt = _dbHelper.ExecuteDataTable(sqlinfo);
-            return FromDataTable<T>(dt);
+            using (IDbConnection conn = _dbHelper.GetCollection())
+            {
+                using (IDataReader reader = _dbHelper.ExecuteReader(conn,sqlinfo))
+                {
+                    return FromDataReader<T>(reader);
+                }
+            }
+            //DataTable dt = _dbHelper.ExecuteDataTable(sqlinfo);
+            //return FromDataTable<T>(dt);
         }
 
         public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, out int recordCount,bool hasCount, params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new()
@@ -378,8 +411,15 @@ namespace Sam.DAO.Entity
                     orderSql = orderSql.Substring(1,orderSql.Length-1);
                 }
                 sqlinfo.Sql = CreatePageSql(entity, pageIndex, pageSize, whereSql, orderSql);
-                DataTable dt = _dbHelper.ExecuteDataTable(sqlinfo);
-                return FromDataTable<T>(dt);
+                using (IDbConnection conn = _dbHelper.GetCollection())
+                {
+                    using (IDataReader reader = _dbHelper.ExecuteReader(conn,sqlinfo))
+                    {
+                        return FromDataReader<T>(reader);
+                    }
+                }
+                //DataTable dt = _dbHelper.ExecuteDataTable(sqlinfo);
+                //return FromDataTable<T>(dt);
             }
             return null;
         }
@@ -411,6 +451,8 @@ namespace Sam.DAO.Entity
                 }
             }
 
+            if (string.IsNullOrEmpty(whereSql)) whereSql = " ";
+
             int startIndex = (pageIndex - 1) * pageSize;
             int endIndex = startIndex + pageSize;
 
@@ -420,6 +462,7 @@ namespace Sam.DAO.Entity
                     return string.Format(_dbHelper.GetDbConfig.PageSql, entity.GetTableName(), startIndex, pageSize, whereSql, orderSql);
                 case DataBaseType.sqlServer:
                 case DataBaseType.Oracle:
+                case DataBaseType.SystemOracle:
                     return string.Format(_dbHelper.GetDbConfig.PageSql, entity.GetTableName(), startIndex, endIndex, whereSql, orderSql);
                 default:
                     return string.Empty;
@@ -597,6 +640,7 @@ namespace Sam.DAO.Entity
                 string columnName = entity.GetColumnName(property.Name);
                 string parameterName = _dbHelper.GetDbConfig.PreParameterChar + columnName;
                 object parameterValue = property.GetValue(entity, null);
+                if (parameterValue == null) continue;
                 if (setSql == string.Empty)
                 {
                     setSql = columnName + "=" + parameterName;

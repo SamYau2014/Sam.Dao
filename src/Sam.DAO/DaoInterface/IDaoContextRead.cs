@@ -15,7 +15,7 @@ namespace Sam.DAO.DaoInterface
         /// <typeparam name="T"></typeparam>
         /// <param name="func">查询条件</param>
         /// <returns></returns>
-        int Count<T>(Expression<Func<T, bool>> func) where T : BaseEntity, new();
+        int Count<T>(Expression<Func<T, bool>> func=null)where T : BaseEntity, new();
 
         /// <summary>
         /// 根据主键查找实体
@@ -51,7 +51,7 @@ namespace Sam.DAO.DaoInterface
         /// <typeparam name="T"></typeparam>
         /// <param name="func">lambda表达式的条件</param>
         /// <returns></returns>
-        IEnumerable<T> Select<T>(Expression<Func<T, bool>> func) where T : BaseEntity, new();
+        IEnumerable<T> Select<T>(Expression<Func<T, bool>> func=null) where T : BaseEntity, new();
 
         /// <summary>
         /// 查询实体集合

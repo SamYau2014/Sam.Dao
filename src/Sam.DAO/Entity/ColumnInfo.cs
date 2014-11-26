@@ -48,6 +48,11 @@ namespace Sam.DAO.Entity
             }
         }
 
+        public void FromDataReader(IDataReader reader)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// 把从数据库中得到的数据转换成实体属性相应的类型
         /// </summary>

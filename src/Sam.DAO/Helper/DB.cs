@@ -76,6 +76,13 @@ namespace Sam.DAO
 
         public abstract DataTable ExecuteDataTable(SqlInfo sqlInfo);
 
+        public abstract IDbConnection GetCollection();
+
+
+        public abstract IDataReader ExecuteReader(IDbConnection conn,string sql, CommandType cmdType);
+
+        public abstract IDataReader ExecuteReader(IDbConnection conn, SqlInfo sqlInfo);
+
         public abstract int ExecuteNonQuery(SqlInfo sqlInfo);
 
         public abstract object ExecuteScalar(SqlInfo sqlinfo);

@@ -18,7 +18,7 @@ namespace Sam.DAO.Entity
      */
     public abstract class BaseEntity : IEntity //: ContextBoundObject
     {
-        private static PropertyInfo[] _primaryKey;                      //主键集合
+        private  PropertyInfo[] _primaryKey;                      //主键集合
         private bool _isSetRelationFlag;                             //是否设置了关联属性
      
         public bool IsSetRelation()
@@ -168,13 +168,28 @@ namespace Sam.DAO.Entity
             }
         }
 
+        public void FromDataReader(IDataReader reader)
+        {
+            PropertyInfo[] properties = this.GetType().GetProperties(false);
+
+            foreach (PropertyInfo property in properties)
+            {
+                String columnname = GetColumnName(property.Name);
+                if(reader[columnname]!=null&&reader[columnname]!=DBNull.Value)
+                {
+                    property.SetValue(this, GetValue(property.PropertyType, reader[columnname]), null);
+                }
+              
+            }
+        }
+
         /// <summary>
         /// 把从数据库中得到的数据转换成实体属性相应的类型
         /// </summary>
         /// <param name="propertyType"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        private object GetValue(Type propertyType, object value)
+        private static object GetValue(Type propertyType, object value)
         {
             Type netType = TypeAdapter.GetNetType(propertyType);
             if (value.ToString() == string.Empty)

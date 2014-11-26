@@ -123,10 +123,28 @@ namespace Sam.DAO
             }
         }
 
+        public override IDbConnection GetCollection()
+        {
+            return this.CreateConnection();
+        }
+
+        public override IDataReader ExecuteReader(IDbConnection conn, string sql, CommandType cmdType)
+        {
+
+                return ExecuteReader(conn, sql, cmdType);
+        }
+
+        public override IDataReader ExecuteReader(IDbConnection conn, SqlInfo sqlInfo)
+        {
+            return ExecuteReader(conn, sqlInfo.Sql, CommandType.Text,
+                                 sqlInfo.Parameters != null ? sqlInfo.Parameters.ToArray() : null);
+
+        }
 
         /// <summary>
         /// ExecuteReader,带参数
         /// </summary>
+        /// <param name="conn"> </param>
         /// <param name="sql"></param>
         /// <param name="cmdType"></param>
         /// <param name="paras"></param>
@@ -388,10 +406,10 @@ namespace Sam.DAO
                         Oracle.DataAccess.Client.OracleCommandBuilder.DeriveParameters(
                             cmd as Oracle.DataAccess.Client.OracleCommand);
                         break;
-                    case DataBaseType.mySql:
-                        MySql.Data.MySqlClient.MySqlCommandBuilder.DeriveParameters(
-                            cmd as MySql.Data.MySqlClient.MySqlCommand);
-                        break;
+                    //case DataBaseType.mySql:
+                    //    MySql.Data.MySqlClient.MySqlCommandBuilder.DeriveParameters(
+                    //        cmd as MySql.Data.MySqlClient.MySqlCommand);
+                    //    break;
                     default:
                         throw new DAOException.DbException("暂时不支持该数据库类型");
                 }

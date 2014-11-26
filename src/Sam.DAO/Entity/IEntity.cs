@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.Reflection;
 using Sam.DAO.Attribute;
 
@@ -9,6 +10,8 @@ namespace Sam.DAO.Entity
         string GetColumnName(string propertyName);
 
         void FromDataRow(System.Data.DataRow dr);
+
+        void FromDataReader(IDataReader reader);
 
         string GetTableName();
 
