@@ -29,11 +29,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Sam.DAO.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MySql.Data">
-      <HintPath>..\..\dll\MySql.Data.dll</HintPath>
-    </Reference>
     <Reference Include="Oracle.DataAccess, Version=2.112.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\Oracle.DataAccess.dll</HintPath>
@@ -41,10 +39,6 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.66.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\System.Data.SQLite.dll</HintPath>
-    </Reference>
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
@@ -73,7 +67,6 @@
     <Compile Include="Entity\BaseEntity.cs" />
     <Compile Include="Entity\ColumnInfo.cs" />
     <Compile Include="Entity\CombinationEntity.cs" />
-    <Compile Include="Entity\CompareType.cs" />
     <Compile Include="Entity\EntityHelper.cs" />
     <Compile Include="ExFunc\AggregateFunc.cs" />
     <Compile Include="ExFunc\ExFunc.cs">

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 using Sam.DAO.Attribute;
+using Sam.DAO.ExFunc;
 using Sam.DAO.Tool;
 
 namespace Sam.DAO.Entity
@@ -50,7 +51,17 @@ namespace Sam.DAO.Entity
 
         public void FromDataReader(IDataReader reader)
         {
-            throw new NotImplementedException();
+            PropertyInfo[] properties = this.GetType().GetProperties(false);
+
+            foreach (PropertyInfo property in properties)
+            {
+                String columnname = GetColumnName(property.Name);
+                if (reader[columnname] != null && reader[columnname] != DBNull.Value)
+                {
+                    property.SetValue(this, GetValue(property.PropertyType, reader[columnname]), null);
+                }
+
+            }
         }
 
         /// <summary>

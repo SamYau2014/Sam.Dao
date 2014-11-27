@@ -22,3 +22,9 @@
 2014-11-5 IDaoContext接口分拆到3个接口IDaoContextRead、IDaoContextWrite、ISqlOperation,修改EntityHelper中LinqToSql直接获取Dbparameter。
 
 2014-11-6 加入Sum、Min、Max、Avg等拓展方法。
+
+2014-11-24 cms项目使用该框架，去掉了dbhelper，PoolDbHelper，DaoDbProviderFactories等关于mysql的引用
+
+2014-11-26 实体查询由运来的DataTable改成用DataReader。
+
+2014-11-27 BaseEntity.GetColumnName 加入缓存池。

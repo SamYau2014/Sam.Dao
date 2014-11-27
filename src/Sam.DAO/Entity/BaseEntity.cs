@@ -16,11 +16,14 @@ namespace Sam.DAO.Entity
      * 由于实体中的属性要与数据库中的字段一一对应，所以基类及子类中不能再有除数据库字段外的
      * 其他属性，相关功能应使用字段或者方法替代
      */
+    /// <summary>
+    /// 实体基类
+    /// </summary>
     public abstract class BaseEntity : IEntity //: ContextBoundObject
     {
         private  PropertyInfo[] _primaryKey;                      //主键集合
         private bool _isSetRelationFlag;                             //是否设置了关联属性
-     
+        private static readonly Hashtable EntityPool = new Hashtable();
         public bool IsSetRelation()
         {
             return _isSetRelationFlag;
@@ -103,6 +106,9 @@ namespace Sam.DAO.Entity
         /// <returns></returns>
         public string GetColumnName(string propertyName)
         {
+            string key = this.GetType().FullName + "_" + propertyName;
+            if (EntityPool.ContainsKey(key))
+                return EntityPool[key] as string;
             PropertyInfo property = this.GetType().GetProperty(propertyName);
             if (property == null)
                 return propertyName;
@@ -110,9 +116,14 @@ namespace Sam.DAO.Entity
             if (attributes.Length == 0)
                 return propertyName;
             PropertyAttribute propertyAttribute = (PropertyAttribute)attributes[0];
-            return propertyAttribute == null ? propertyName : propertyAttribute.Name;
+            return(string) (EntityPool[key]= propertyAttribute == null ? propertyName : propertyAttribute.Name);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
         public string GetSequences(PropertyInfo property)
         {
             object[] attributes = property.GetCustomAttributes(typeof(PropertyAttribute), false);
@@ -128,8 +139,9 @@ namespace Sam.DAO.Entity
         /// <returns></returns>
         public PropertyInfo[] GetPrimaryKey()
         {
-            if (_primaryKey != null)
-                return _primaryKey;
+            string key = this.GetType().FullName + "_PrimaryKey";
+            if (EntityPool.ContainsKey(key))
+                return _primaryKey = EntityPool[key] as PropertyInfo[];
             ArrayList list = new ArrayList();
             foreach (PropertyInfo property in this.GetType().GetProperties(false))
             {
@@ -143,9 +155,14 @@ namespace Sam.DAO.Entity
                     list.Add(property);
                 }
             }
-            return (PropertyInfo[])list.ToArray(typeof(PropertyInfo));
+            return (PropertyInfo[]) (EntityPool[key] = list.ToArray(typeof (PropertyInfo)));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
         public object GetValueByColumnName(string columnName)
         {
             return (from property in this.GetType().GetProperties() where GetColumnName(property.Name) == columnName select property.GetValue(this, null)).FirstOrDefault();
@@ -167,7 +184,11 @@ namespace Sam.DAO.Entity
                     property.SetValue(this, GetValue(property.PropertyType, dr[col]), null);
             }
         }
-
+         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
         public void FromDataReader(IDataReader reader)
         {
             PropertyInfo[] properties = this.GetType().GetProperties(false);
@@ -191,9 +212,9 @@ namespace Sam.DAO.Entity
         /// <returns></returns>
         private static object GetValue(Type propertyType, object value)
         {
-            Type netType = TypeAdapter.GetNetType(propertyType);
             if (value.ToString() == string.Empty)
                 return null;
+            Type netType = TypeAdapter.GetNetType(propertyType);
             return Convert.ChangeType(value, netType);
 
         }

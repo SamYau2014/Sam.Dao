@@ -1,4 +1,6 @@
-﻿using Sam.DAO.ExFunc;
+﻿using System.Collections;
+using System.Collections.ObjectModel;
+using Sam.DAO.ExFunc;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,6 +20,7 @@ namespace Sam.DAO.Entity
         private const string InsertFormat = "insert into {0}({1}) values({2})";
         private const string UpdateFormat = "update {0} set {1} {2}";
         private const string DeleteFormat = "delete from {0} {1}";
+     //   private readonly Hashtable SqlCachePool = new Hashtable();
 
         private readonly Dictionary<string, BaseEntity> _foreignEntityPool = new Dictionary<string, BaseEntity>();
 
@@ -59,14 +62,17 @@ namespace Sam.DAO.Entity
             return list;
         }
 
-        private IEnumerable<T> FromDataReader<T>(IDataReader reader) where T : IEntity, new()
+        private static IEnumerable<T> FromDataReader<T>(IDataReader reader) where T : IEntity, new()
         {
+            ICollection<T> Collection = new Collection<T>();
             while(reader.Read())
             {
                 T entity = new T();
                 entity.FromDataReader(reader);
-                yield return entity;
+               // yield return entity;
+                   Collection.Add(entity);
             }
+                   return Collection.Count == 0 ? null : Collection;
         }
 
         //给关联属性赋值
@@ -328,7 +334,7 @@ namespace Sam.DAO.Entity
             {
                 using (IDataReader reader = _dbHelper.ExecuteReader(conn, sqlInfo))
                 {
-                    return FromDataReader<T>(reader);
+                   return  FromDataReader<T>(reader);
                 }
             }
             //var dt = _dbHelper.ExecuteDataTable(sqlInfo);
@@ -358,6 +364,10 @@ namespace Sam.DAO.Entity
             }
             else
             {
+                //string key = entity.GetType().FullName + "_page_top500";
+                //if (!SqlCachePool.ContainsKey(key))
+                //    SqlCachePool.Add(key, CreatePageSql(entity, 1, 500, string.Empty, string.Empty));
+                //sqlinfo.Sql = SqlCachePool[key] as string;
                 sqlinfo.Sql = CreatePageSql(entity, 1, 500, string.Empty, string.Empty);
             }
             if (properties != null)
@@ -377,8 +387,6 @@ namespace Sam.DAO.Entity
                     return FromDataReader<T>(reader);
                 }
             }
-            //DataTable dt = _dbHelper.ExecuteDataTable(sqlinfo);
-            //return FromDataTable<T>(dt);
         }
 
         public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, out int recordCount,bool hasCount, params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new()
@@ -451,10 +459,8 @@ namespace Sam.DAO.Entity
                 }
             }
 
-            if (string.IsNullOrEmpty(whereSql)) whereSql = " ";
-
             int startIndex = (pageIndex - 1) * pageSize;
-            int endIndex = startIndex + pageSize;
+         
 
             switch (_dbHelper.GetDbConfig.DbType)
             {
@@ -463,6 +469,7 @@ namespace Sam.DAO.Entity
                 case DataBaseType.sqlServer:
                 case DataBaseType.Oracle:
                 case DataBaseType.SystemOracle:
+                    int endIndex = startIndex + pageSize;
                     return string.Format(_dbHelper.GetDbConfig.PageSql, entity.GetTableName(), startIndex, endIndex, whereSql, orderSql);
                 default:
                     return string.Empty;
@@ -535,25 +542,24 @@ namespace Sam.DAO.Entity
                     if (entity.IsAutoIncrement(property))
                         continue;
                     string columnName = entity.GetColumnName(property.Name);
-                    string parameterName = _dbHelper.GetDbConfig.PreParameterChar + columnName;
                     object parameterValue = property.GetValue(entity, null);
-                    if (parameterValue != null)
+                    if (parameterValue == null) continue;
+                    string parameterName = _dbHelper.GetDbConfig.PreParameterChar + columnName;
+
+                    if (fieldSql != "")
                     {
-                        if (fieldSql != "")
-                        {
-                            fieldSql += "," + columnName;
-                            valueParameterSql += "," + parameterName;
-                        }
-                        else
-                        {
-                            fieldSql = columnName;
-                            valueParameterSql = parameterName;
-                        }
-                        DbParameter parameter = _dbHelper.CreateParameter();
-                        DbParameterProviderFactory.CreateParameterProvider(_dbHelper.GetDbConfig.DbType).SetParameter(
-                            parameterName, parameterValue, property.PropertyType, ref parameter);
-                        sqlinfo.Parameters.Add(parameter);
+                        fieldSql += "," + columnName;
+                        valueParameterSql += "," + parameterName;
                     }
+                    else
+                    {
+                        fieldSql = columnName;
+                        valueParameterSql = parameterName;
+                    }
+                    DbParameter parameter = _dbHelper.CreateParameter();
+                    DbParameterProviderFactory.CreateParameterProvider(_dbHelper.GetDbConfig.DbType).SetParameter(
+                        parameterName, parameterValue, property.PropertyType, ref parameter);
+                    sqlinfo.Parameters.Add(parameter);
                 }
             }
 
@@ -638,9 +644,10 @@ namespace Sam.DAO.Entity
                     continue;
 
                 string columnName = entity.GetColumnName(property.Name);
-                string parameterName = _dbHelper.GetDbConfig.PreParameterChar + columnName;
                 object parameterValue = property.GetValue(entity, null);
                 if (parameterValue == null) continue;
+                string parameterName = _dbHelper.GetDbConfig.PreParameterChar + columnName;
+
                 if (setSql == string.Empty)
                 {
                     setSql = columnName + "=" + parameterName;
