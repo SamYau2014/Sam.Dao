@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -18,28 +19,28 @@ namespace Sam.DAO.ExFunc
         private const string MaxSql = "select max({0}) from {1} {2}";
         private const string AvgSql = "select avg({0}) from {1} {2}";
 
-        public static object Sum<T>(this IDaoContext dao, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
+        public static object Sum<T>(this IBaseServer server, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
         {
-            var sqlinfo = BuildSqlInfo(dao, SumSql, propertieName, func);
-            return dao.ExecuteScalar(sqlinfo);
+            var sqlinfo = BuildSqlInfo(server, SumSql, propertieName, func);
+            return server.ExecuteScalar(sqlinfo);
         }
 
-        public static object Min<T>(this IDaoContext dao, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
+        public static object Min<T>(this IBaseServer server, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
         {
-            var sqlinfo = BuildSqlInfo(dao, MinSql, propertieName, func);
-            return dao.ExecuteScalar(sqlinfo);
+            var sqlinfo = BuildSqlInfo(server, MinSql, propertieName, func);
+            return server.ExecuteScalar(sqlinfo);
         }
 
-        public static object Max<T>(this IDaoContext dao, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
+        public static object Max<T>(this IBaseServer server, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
         {
-            var sqlinfo = BuildSqlInfo(dao, MaxSql, propertieName, func);
-            return dao.ExecuteScalar(sqlinfo);
+            var sqlinfo = BuildSqlInfo(server, MaxSql, propertieName, func);
+            return server.ExecuteScalar(sqlinfo);
         }
 
-        public static object Avg<T>(this IDaoContext dao, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
+        public static object Avg<T>(this IBaseServer server, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
         {
-            var sqlinfo = BuildSqlInfo(dao, AvgSql, propertieName, func);
-            return dao.ExecuteScalar(sqlinfo);
+            var sqlinfo = BuildSqlInfo(server, AvgSql, propertieName, func);
+            return server.ExecuteScalar(sqlinfo);
         }
 
         /// <summary>
@@ -47,16 +48,16 @@ namespace Sam.DAO.ExFunc
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TOut">输出类型</typeparam>
-        /// <param name="dao"></param>
+        /// <param name="server"></param>
         /// <param name="propertie">属性</param>
         /// <param name="func">查询条件</param>
         /// <returns></returns>
-        public static TOut Sum<T, TOut>(this IDaoContext dao, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func)
+        public static TOut Sum<T, TOut>(this IBaseServer server, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func)
             where T : BaseEntity, new()
             where TOut : struct
         {
-            var sqlinfo = BuildSqlInfo(dao, SumSql, propertie, func);
-            return (TOut)dao.ExecuteScalar(sqlinfo);
+            var sqlinfo = BuildSqlInfo(server, SumSql, propertie, func);
+            return (TOut)server.ExecuteScalar(sqlinfo);
         }
 
         /// <summary>
@@ -64,16 +65,16 @@ namespace Sam.DAO.ExFunc
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TOut">输出类型</typeparam>
-        /// <param name="dao"></param>
+        /// <param name="server"></param>
         /// <param name="propertie">属性</param>
         /// <param name="func">查询条件</param>
         /// <returns></returns>
-        public static TOut Min<T, TOut>(this IDaoContext dao, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func)
+        public static TOut Min<T, TOut>(this IBaseServer server, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func)
             where T : BaseEntity, new()
             where TOut : struct
         {
-            var sqlinfo = BuildSqlInfo(dao, MinSql, propertie, func);
-            return (TOut)dao.ExecuteScalar(sqlinfo);
+            var sqlinfo = BuildSqlInfo(server, MinSql, propertie, func);
+            return (TOut)server.ExecuteScalar(sqlinfo);
         }
 
         /// <summary>
@@ -81,16 +82,16 @@ namespace Sam.DAO.ExFunc
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TOut">输出类型</typeparam>
-        /// <param name="dao"></param>
+        /// <param name="server"></param>
         /// <param name="propertie">属性</param>
         /// <param name="func">查询条件</param>
         /// <returns></returns>
-        public static TOut Max<T, TOut>(this IDaoContext dao, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func)
+        public static TOut Max<T, TOut>(this IBaseServer server, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func)
             where T : BaseEntity, new()
             where TOut : struct
         {
-            var sqlinfo = BuildSqlInfo(dao, MaxSql, propertie, func);
-            return (TOut)dao.ExecuteScalar(sqlinfo);
+            var sqlinfo = BuildSqlInfo(server, MaxSql, propertie, func);
+            return (TOut)server.ExecuteScalar(sqlinfo);
         }
 
         /// <summary>
@@ -98,19 +99,19 @@ namespace Sam.DAO.ExFunc
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TOut">输出类型</typeparam>
-        /// <param name="dao"></param>
+        /// <param name="server"></param>
         /// <param name="propertie">属性</param>
         /// <param name="func">查询条件</param>
         /// <returns></returns>
-        public static TOut Avg<T, TOut>(this IDaoContext dao, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func)
+        public static TOut Avg<T, TOut>(this IBaseServer server, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func)
             where T : BaseEntity, new()
             where TOut : struct
         {
-            var sqlinfo = BuildSqlInfo(dao, AvgSql, propertie, func);
-            return (TOut)dao.ExecuteScalar(sqlinfo);
+            var sqlinfo = BuildSqlInfo(server, AvgSql, propertie, func);
+            return (TOut)server.ExecuteScalar(sqlinfo);
         }
 
-        private static SqlInfo BuildSqlInfo<T>(IDaoContext dao, string sqlType, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
+        private static SqlInfo BuildSqlInfo<T>(IBaseServer server, string sqlType, string propertieName, Expression<Func<T, bool>> func) where T : BaseEntity, new()
         {
             if (string.IsNullOrEmpty(propertieName)) throw new ArgumentNullException("propertieName");
             T entity = new T();
@@ -133,7 +134,7 @@ namespace Sam.DAO.ExFunc
             if (func != null)
             {
                 ICollection<DbParameter> parameters = new List<DbParameter>();
-                whereSql = ExpressionParser<T>.Parse(func).ToSql(ref parameters, dao.GetDbHelper());
+                whereSql = ExpressionParser<T>.Parse(func).ToSql(ref parameters, server.GetDbHelper());
                 if (whereSql != string.Empty)
                 {
                     whereSql = " where " + whereSql;
@@ -144,7 +145,7 @@ namespace Sam.DAO.ExFunc
             return sqlinfo;
         }
 
-        private static SqlInfo BuildSqlInfo<T, TOut>(IDaoContext dao, string sqlType, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func) where T : Entity.BaseEntity, new()
+        private static SqlInfo BuildSqlInfo<T, TOut>(IBaseServer server, string sqlType, Expression<Func<T, TOut>> propertie, Expression<Func<T, bool>> func) where T : Entity.BaseEntity, new()
         {
             if (propertie == null) throw new ArgumentNullException("propertie");
             T entity = new T();
@@ -155,7 +156,7 @@ namespace Sam.DAO.ExFunc
             if (func != null)
             {
                 ICollection<DbParameter> parameters = new List<DbParameter>();
-                whereSql = ExpressionParser<T>.Parse(func).ToSql(ref parameters, dao.GetDbHelper());
+                whereSql = ExpressionParser<T>.Parse(func).ToSql(ref parameters, server.GetDbHelper());
                 if (whereSql != string.Empty)
                 {
                     whereSql = " where " + whereSql;
@@ -187,3 +188,4 @@ namespace Sam.DAO.ExFunc
         }
     }
 }
+#pragma warning restore 1591

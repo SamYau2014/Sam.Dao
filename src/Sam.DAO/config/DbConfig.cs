@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using Sam.DAO.Tool;
 
 namespace Sam.DAO.config
@@ -58,6 +59,7 @@ where rowid in
                         DateFormat = "'{0}'";
                         break;
                     case DataBaseType.Oracle:
+                    case DataBaseType.SystemOracle:
                         PreParameterChar = ":";
                         DateFormat = " to_date('{0}', 'yyyy-mm-dd hh24:mi:ss')";
                         PageSql = _oraclePageSql;
@@ -121,3 +123,4 @@ where rowid in
         }
     }
 }
+#pragma warning restore 1591

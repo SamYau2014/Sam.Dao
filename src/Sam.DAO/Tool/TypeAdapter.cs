@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Collections.Generic;
 using System.Data;
 namespace Sam.DAO.Tool
@@ -302,3 +303,4 @@ namespace Sam.DAO.Tool
         #endregion
     }
 }
+#pragma warning restore 1591

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -139,7 +140,7 @@ namespace Sam.DAO
         public IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc,out int recordCount, bool isAsc) where T : BaseEntity, new()
         {
             return _entityHelper.Select(pageIndex, pageSize, func, out recordCount, true,
-                                        new OrderFunction<T> {func = orderFunc, isAsc = isAsc});
+                                        new OrderFunction<T> {Func = orderFunc, IsAsc = isAsc});
         }
 
         /// <summary>
@@ -171,7 +172,7 @@ namespace Sam.DAO
         {
             int count;
             return _entityHelper.Select(pageIndex, pageSize, func, out count, false,
-                                      new OrderFunction<T> { func = orderFunc, isAsc = isAsc });
+                                      new OrderFunction<T> { Func = orderFunc, IsAsc = isAsc });
         }
 
         /// <summary>
@@ -265,14 +266,15 @@ namespace Sam.DAO
         #endregion
 
         #region 删除
+
         /// <summary>
         /// 按主键删除
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="entity"></param>
-        public int Delete<T>(T entity) where T : BaseEntity
+        /// <param name="keyValues"> 主键值（数量对应表中主键的数量）</param>
+        public int Delete<T>(params object[] keyValues) where T : BaseEntity,new()
         {
-            return _entityHelper.Delete(entity);
+            return _entityHelper.Delete<T>(keyValues);
         }
 
         /// <summary>
@@ -295,15 +297,16 @@ namespace Sam.DAO
             return para;
         }
 
+        public int ExecuteNonQuery(string sql)
+        {
+            return _dbHelper.ExecuteNonQuery(new SqlInfo { Sql = sql });
+        }
+
         public int ExecuteNonQuery(string sql, DbParameter[] paras)
         {
             return _dbHelper.ExecuteNonQuery(new SqlInfo{Sql=sql, Parameters=paras});
         }
 
-        public int ExecuteNonQuery(SqlInfo sqlInfo)
-        {
-            return _dbHelper.ExecuteNonQuery(sqlInfo);
-        }
 
         /// <summary>
         /// 执行事务（注意：mysql若要支持事务，必须把引擎改为InnoDB，MyISAM是不支持事务的）
@@ -338,16 +341,6 @@ namespace Sam.DAO
             return _dbHelper.ExecuteDataTable(sqlInfo);
         }
 
-        public int GetSerial(string tableName)
-        {
-            int id = 0;
-            DbParameter para1 = CreateParameter(_dbConfig.PreParameterChar+"v_seq_name", tableName, typeof(string));
-            para1.Direction = ParameterDirection.Input;
-            DbParameter para2 = CreateParameter(_dbConfig.PreParameterChar+"v_seq_value", null, typeof(string));
-            para2.Direction = ParameterDirection.Output;
-            _dbHelper.RunSPDataTable("get_sequence", para1, para2);
-            return Int32.TryParse(para2.Value.ToString(), out id) == true ? id : 0;
-        }
 
         public object ExecuteScalar(string sql)
         {
@@ -388,5 +381,7 @@ namespace Sam.DAO
             _entityHelper = null;
         }
         #endregion
+
     }
 }
+#pragma warning restore 1591

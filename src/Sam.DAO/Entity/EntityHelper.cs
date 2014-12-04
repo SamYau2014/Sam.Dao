@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿#pragma warning disable 1591
 using System.Collections.ObjectModel;
 using Sam.DAO.ExFunc;
 using System;
@@ -20,10 +20,8 @@ namespace Sam.DAO.Entity
         private const string InsertFormat = "insert into {0}({1}) values({2})";
         private const string UpdateFormat = "update {0} set {1} {2}";
         private const string DeleteFormat = "delete from {0} {1}";
-     //   private readonly Hashtable SqlCachePool = new Hashtable();
 
         private readonly Dictionary<string, BaseEntity> _foreignEntityPool = new Dictionary<string, BaseEntity>();
-
 
         /// <summary>
         /// 数据库访问对象
@@ -55,8 +53,6 @@ namespace Sam.DAO.Entity
             {
                 T entity = new T();
                 entity.FromDataRow(dr);
-
-                //BindRalationProperty(entity, null);
                 list.Add(entity);
             }
             return list;
@@ -65,14 +61,13 @@ namespace Sam.DAO.Entity
         private static IEnumerable<T> FromDataReader<T>(IDataReader reader) where T : IEntity, new()
         {
             ICollection<T> Collection = new Collection<T>();
-            while(reader.Read())
+            while (reader.Read())
             {
                 T entity = new T();
                 entity.FromDataReader(reader);
-               // yield return entity;
-                   Collection.Add(entity);
+                Collection.Add(entity);
             }
-                   return Collection.Count == 0 ? null : Collection;
+            return Collection.Count == 0 ? null : Collection;
         }
 
         //给关联属性赋值
@@ -255,8 +250,7 @@ namespace Sam.DAO.Entity
             {
                 return FromDataTable<ColumnInfo>(dt);
             }
-            else
-                return null;
+            return null;
         }
 
         #region 查询
@@ -337,8 +331,6 @@ namespace Sam.DAO.Entity
                    return  FromDataReader<T>(reader);
                 }
             }
-            //var dt = _dbHelper.ExecuteDataTable(sqlInfo);
-            //return FromDataTable<T>(dt);
         }
 
         /// <summary>
@@ -346,6 +338,7 @@ namespace Sam.DAO.Entity
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
+        /// <param name="properties"> </param>
         /// <returns></returns>
         public IEnumerable<T> Select<T>(Expression<Func<T, bool>> func, string[] properties) where T : BaseEntity, new()
         {
@@ -364,10 +357,6 @@ namespace Sam.DAO.Entity
             }
             else
             {
-                //string key = entity.GetType().FullName + "_page_top500";
-                //if (!SqlCachePool.ContainsKey(key))
-                //    SqlCachePool.Add(key, CreatePageSql(entity, 1, 500, string.Empty, string.Empty));
-                //sqlinfo.Sql = SqlCachePool[key] as string;
                 sqlinfo.Sql = CreatePageSql(entity, 1, 500, string.Empty, string.Empty);
             }
             if (properties != null)
@@ -413,7 +402,7 @@ namespace Sam.DAO.Entity
                 {
                     foreach (var orderfunc in orderFuncs)
                     {
-                        orderSql += "," + entity.OrderBy<T>(orderfunc.func, orderfunc.isAsc);
+                        orderSql += "," + entity.OrderBy<T>(orderfunc.Func, orderfunc.IsAsc);
                     }
 
                     orderSql = orderSql.Substring(1,orderSql.Length-1);
@@ -426,8 +415,6 @@ namespace Sam.DAO.Entity
                         return FromDataReader<T>(reader);
                     }
                 }
-                //DataTable dt = _dbHelper.ExecuteDataTable(sqlinfo);
-                //return FromDataTable<T>(dt);
             }
             return null;
         }
@@ -645,7 +632,6 @@ namespace Sam.DAO.Entity
 
                 string columnName = entity.GetColumnName(property.Name);
                 object parameterValue = property.GetValue(entity, null);
-                if (parameterValue == null) continue;
                 string parameterName = _dbHelper.GetDbConfig.PreParameterChar + columnName;
 
                 if (setSql == string.Empty)
@@ -670,9 +656,18 @@ namespace Sam.DAO.Entity
         /// 根据主键删除
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="entity"></param>
-        public int Delete<T>(T entity) where T : BaseEntity
+        public int Delete<T>(params object[] keyValues) where T : BaseEntity,new()
         {
+            T entity = new T();
+            PropertyInfo[] primaryKeys = entity.GetPrimaryKey();
+            if (primaryKeys == null || primaryKeys.Length == 0)
+            {
+                throw new MissingPrimaryKeyException();
+            }
+            for (int i = 0; i < primaryKeys.Length; i++)
+            {
+                primaryKeys[i].SetValue(entity, keyValues[i], null);
+            }
            return _dbHelper.ExecuteNonQuery(CreateDeleteSqlInfo(entity, null));
         }
 
@@ -712,3 +707,4 @@ namespace Sam.DAO.Entity
         #endregion
     }
 }
+#pragma warning restore 1591

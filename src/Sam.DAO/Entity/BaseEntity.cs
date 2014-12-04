@@ -1,4 +1,5 @@
-﻿using Sam.DAO.ExFunc;
+﻿#pragma warning disable 1591
+using Sam.DAO.ExFunc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -220,4 +221,4 @@ namespace Sam.DAO.Entity
         }
     }
 }
-
+#pragma warning restore 1591

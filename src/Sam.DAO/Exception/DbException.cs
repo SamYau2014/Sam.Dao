@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Runtime.Serialization;
 
 namespace Sam.DAO.DAOException
@@ -12,3 +13,4 @@ namespace Sam.DAO.DAOException
         public DbException(string message, System.Exception innerException) : base(message, innerException) { }
     }
 }
+#pragma warning restore 1591

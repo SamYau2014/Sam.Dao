@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Linq.Expressions;
 using Sam.DAO.Entity;
 
@@ -48,22 +49,22 @@ namespace Sam.DAO.DaoInterface
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="entity"></param>
-        /// <param name="whereFunc">修改条件，若条件为null，则修改整个表的数据（请谨慎使用）</param>
+        /// <param name="whereFunc">修改条件</param>
         /// <param name="properties">要修改的属性集合</param>
         int Update<T>(T entity, Expression<Func<T, bool>> whereFunc, string[] properties) where T : BaseEntity;
 
-        /// <summary>
-        /// 按主键删除
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entity"></param>
-        int Delete<T>(T entity) where T : BaseEntity;
+       /// <summary>
+       /// 按主键删除
+       /// </summary>
+       /// <typeparam name="T"></typeparam>
+       int Delete<T>(params object[] keyValues) where T : BaseEntity, new();
 
         /// <summary>
         /// 按条件删除
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="whereFunc">删除条件，若条件为null，则删除整个表的数据（请谨慎使用）</param>
+        /// <param name="whereFunc">删除条件</param>
         int Delete<T>(Expression<Func<T, bool>> whereFunc) where T : BaseEntity, new();
     }
 }
+#pragma warning restore 1591

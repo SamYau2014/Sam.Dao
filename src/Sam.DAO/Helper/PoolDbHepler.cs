@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Collections;
 using System.Data;
 using System.Data.Common;
@@ -131,7 +132,7 @@ namespace Sam.DAO
         public override IDataReader ExecuteReader(IDbConnection conn, string sql, CommandType cmdType)
         {
 
-                return ExecuteReader(conn, sql, cmdType);
+                return ExecuteReader(conn, sql, cmdType,null);
         }
 
         public override IDataReader ExecuteReader(IDbConnection conn, SqlInfo sqlInfo)
@@ -149,7 +150,7 @@ namespace Sam.DAO
         /// <param name="cmdType"></param>
         /// <param name="paras"></param>
         /// <returns></returns>
-        private IDataReader ExecuteReader(IDbConnection conn, string sql, CommandType cmdType, DbParameter[] paras = null)
+        private IDataReader ExecuteReader(IDbConnection conn, string sql, CommandType cmdType, DbParameter[] paras)
         {
             using (IDbCommand cmd = conn.CreateCommand())
             {
@@ -171,14 +172,14 @@ namespace Sam.DAO
 
         public override DataTable ExecuteDataTable(string sql)
         {
-            SqlInfo sqlInfo = new SqlInfo {Sql = sql, Parameters = null};
+            var sqlInfo = new SqlInfo {Sql = sql, Parameters = null};
             return ExecuteDataTable(sqlInfo);
         }
 
         /// <summary>
         /// ExecuteDataTable
         /// </summary>
-        /// <param name="sql"></param>
+        /// <param name="sqlInfo"></param>
         /// <returns></returns>
         public override DataTable ExecuteDataTable(SqlInfo sqlInfo)
         {
@@ -192,19 +193,18 @@ namespace Sam.DAO
                         dr = ExecuteReader(conn, sqlInfo.Sql, CommandType.Text);
                     else
                         dr = ExecuteReader(conn, sqlInfo.Sql, CommandType.Text, sqlInfo.Parameters.ToArray());
-                    DataTable dt = new DataTable();
+                    var dt = new DataTable();
                     int fieldCount = dr.FieldCount;
                     for (int count = 0; count <= fieldCount - 1; count++)
                     {
                         dt.Columns.Add(dr.GetName(count), typeof (object));
                     }
-                    //populate datatable
                     while (dr.Read())
                     {
                         DataRow datarow = dt.NewRow();
                         for (int i = 0; i < dr.FieldCount; i++)
                         {
-                            datarow[i] = dr[i].ToString();
+                            datarow[i] = dr[i];
                         }
                         dt.Rows.Add(datarow);
                     }
@@ -294,7 +294,8 @@ namespace Sam.DAO
         /// <summary>
         /// ExecuteTransaction
         /// </summary>
-        /// <param name="sqls"></param>
+        /// <param name="isolationLevel"> </param>
+        /// <param name="sqlInfos"> </param>
         /// <returns></returns>
         public override bool ExecuteTransaction(IsolationLevel isolationLevel, params SqlInfo[] sqlInfos)
         {
@@ -333,6 +334,7 @@ namespace Sam.DAO
         /// <summary>
         /// ExecuteTransaction
         /// </summary>
+        /// <param name="isolationLevel"> </param>
         /// <param name="sqls"></param>
         /// <returns></returns>
         public override bool ExecuteTransaction(IsolationLevel isolationLevel, params string[] sqls)
@@ -475,3 +477,4 @@ namespace Sam.DAO
 
     }
 }
+#pragma warning restore 1591

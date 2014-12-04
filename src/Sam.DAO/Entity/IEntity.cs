@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#pragma warning disable 1591
+using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 using Sam.DAO.Attribute;
@@ -24,3 +25,4 @@ namespace Sam.DAO.Entity
         void SetRelationFlag(bool isSetRelationFlag);
     }
 }
+#pragma warning restore 1591

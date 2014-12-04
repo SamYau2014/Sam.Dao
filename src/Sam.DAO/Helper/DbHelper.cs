@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿#pragma warning disable 1591
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -132,6 +132,7 @@ namespace Sam.DAO
         /// ExecuteReader,不带参数
         /// </summary>
         /// <param name="sql"></param>
+        /// <param name="cmdType"> </param>
         /// <returns></returns>
         private IDataReader ExecuteReader(string sql,CommandType cmdType)
         {
@@ -176,7 +177,7 @@ namespace Sam.DAO
         /// <summary>
         /// ExecuteDataTable
         /// </summary>
-        /// <param name="sql"></param>
+        /// <param name="sqlInfo"></param>
         /// <returns></returns>
         public override DataTable ExecuteDataTable(SqlInfo sqlInfo)
         {
@@ -474,3 +475,4 @@ namespace Sam.DAO
         }
     }
 }
+#pragma warning restore 1591

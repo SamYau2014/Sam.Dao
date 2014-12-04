@@ -1,7 +1,7 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Data.Common;
 using System.Data.OleDb;
-using Sam.DAO.DAOException;
 
 namespace Sam.DAO.Tool
 {
@@ -11,7 +11,7 @@ namespace Sam.DAO.Tool
         {
             OleDbParameter oledbPara = para as OleDbParameter;
             oledbPara.ParameterName = paraName;
-            oledbPara.Value = value;
+            oledbPara.Value = value??DBNull.Value;
             oledbPara.OleDbType = GetDbType(TypeAdapter.GetNetType(valueType));
         }
 
@@ -47,3 +47,4 @@ namespace Sam.DAO.Tool
         }
     }
 }
+#pragma warning restore 1591

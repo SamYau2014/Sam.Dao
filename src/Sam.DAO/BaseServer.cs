@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -58,6 +59,7 @@ namespace Sam.DAO
         }
 
         #region 分页查询
+
         /// <summary>
         /// 分页查询
         /// </summary>
@@ -66,6 +68,7 @@ namespace Sam.DAO
         /// <param name="pageSize">每页记录数</param>
         /// <param name="func">查询条件</param>
         /// <param name="orderFunc">排序条件,仅支持单字段排序</param>
+        /// <param name="recordCount">总行数 </param>
         /// <param name="isAsc">是否升序</param>
         /// <returns></returns>
         public virtual IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, Expression<Func<T, object>> orderFunc, out int recordCount, bool isAsc = true) where T : BaseEntity, new()
@@ -172,14 +175,14 @@ namespace Sam.DAO
         #endregion
 
         #region 删除
+
         /// <summary>
         /// 按主键删除
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="entity"></param>
-        public virtual int Delete<T>(T entity) where T : BaseEntity
+        public virtual int Delete<T>(params object[] keyValues) where T : BaseEntity,new()
         {
-            return this.GetDaoContext().Delete(entity);
+            return this.GetDaoContext().Delete<T>(keyValues);
         }
 
         /// <summary>
@@ -199,14 +202,14 @@ namespace Sam.DAO
             return this.GetDaoContext().CreateParameter(paraName, value, valueType);
         }
 
+        public int ExecuteNonQuery(string sql)
+        {
+            return this.GetDaoContext().ExecuteNonQuery(sql);
+        }
+
         public virtual int ExecuteNonQuery(string sqlFormat, DbParameter[] paras)
         {
             return this.GetDaoContext().ExecuteNonQuery(sqlFormat, paras);
-        }
-
-        public virtual int ExecuteNonQuery(SqlInfo sqlInfo)
-        {
-            return this.GetDaoContext().ExecuteNonQuery(sqlInfo);
         }
 
         /// <summary>
@@ -240,11 +243,6 @@ namespace Sam.DAO
         public virtual DataTable ExecuteDataTable(SqlInfo sqlInfo)
         {
             return this.GetDaoContext().ExecuteDataTable(sqlInfo);
-        }
-
-        public int GetSerial(string tableName)
-        {
-            return this.GetDaoContext().GetSerial(tableName);
         }
 
         public DataTable GetTables()
@@ -291,4 +289,4 @@ namespace Sam.DAO
 
     }
 }
-
+#pragma warning restore 1591

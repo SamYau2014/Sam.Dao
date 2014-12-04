@@ -1,10 +1,8 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
 using Sam.DAO.Tool;
 using Sam.DAO.config;
 
@@ -105,3 +103,4 @@ namespace Sam.DAO
         }
     }
 }
+#pragma warning restore 1591

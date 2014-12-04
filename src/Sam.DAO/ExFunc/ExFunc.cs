@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
@@ -114,3 +115,4 @@ namespace Sam.DAO.ExFunc
         
     }
 }
+#pragma warning restore 1591

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable 1591
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq.Expressions;
@@ -7,6 +8,9 @@ using Sam.DAO.Tool;
 
 namespace Sam.DAO.DaoInterface
 {
+    /// <summary>
+    /// 读操作
+    /// </summary>
     public interface IDaoContextRead
     {
         /// <summary>
@@ -112,3 +116,4 @@ namespace Sam.DAO.DaoInterface
         IEnumerable<T> Select<T>(int pageIndex, int pageSize, Expression<Func<T, bool>> func, out int recordCount, params OrderFunction<T>[] orderFuncs) where T : BaseEntity, new();
     }
 }
+#pragma warning restore 1591
